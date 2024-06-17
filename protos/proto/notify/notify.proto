@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package notify;
+
+option go_package = "notify.v1;notifyv1";
+
+service SendMessage {
+  rpc SendMessageById (SendMessageByIdRequest) returns (SendMessageByIdResponse);
+}
+
+enum NotifyType {
+  moderate = 0;
+  significant = 1;
+  alert = 2;
+}
+
+message MailNotify {
+  string subject = 1;
+  string body = 2;
+}
+
+message PhoneNotify {
+  string body = 1;
+}
+
+message Channels {
+  MailNotify mail = 1;
+  PhoneNotify phone = 2;
+}
+
+message SendMessageByIdRequest {
+  string userId = 1;
+  NotifyType notifyType = 2;
+  Channels channels = 3;
+}
+
+message SendMessageByIdResponse{
+  string respond = 1;
+}
+
+service Users {
+ rpc UserPreferences (UserPreferencesRequest) returns (UserPreferencesResponse);
+}
+
+message MailApproval {
+  string approval = 1;
+}
+
+message PhoneApproval {
+  string approval = 1;
+}
+
+message Preferences {
+  MailApproval mail = 1;
+  PhoneApproval phone = 2;
+}
+
+message UserPreferencesRequest {
+  string userId = 1;
+
+}
+
+message UserPreferencesResponse {
+  string respond = 1;
+}

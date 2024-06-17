@@ -1,0 +1,19 @@
+app:
+  name: "notification-service"
+  version: "v1.0.0"
+  countWorkers: 10
+  timeout: 5s
+
+grpc:
+  port: ":8080"
+  timeout: 10s
+
+postgres:
+  poolMax: 2
+
+rabbitmq:
+  rpcServerExchange: "rpc_server"
+  rpcClientExchange: "rpc_client"
+
+logger:
+  logLevel: "debug"
