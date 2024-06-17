@@ -7,6 +7,8 @@ import (
 )
 
 type App struct {
+	log *slog.Logger
+
 	DB *postgres.Postgres
 }
 
@@ -19,6 +21,7 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 	}
 
 	return &App{
-		DB: pg,
+		log: l,
+		DB:  pg,
 	}
 }
