@@ -4,8 +4,8 @@ package notify;
 
 option go_package = "notify.v1;notifyv1";
 
-service SendMessage {
-  rpc SendMessageById (SendMessageByIdRequest) returns (SendMessageByIdResponse);
+service SendNotify {
+  rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
 }
 
 enum NotifyType {
@@ -28,13 +28,13 @@ message Channels {
   PhoneNotify phone = 2;
 }
 
-message SendMessageByIdRequest {
+message SendMessageRequest {
   string userId = 1;
   NotifyType notifyType = 2;
   Channels channels = 3;
 }
 
-message SendMessageByIdResponse{
+message SendMessageResponse{
   string respond = 1;
 }
 
@@ -43,11 +43,11 @@ service Users {
 }
 
 message MailApproval {
-  string approval = 1;
+  bool approval = 1;
 }
 
 message PhoneApproval {
-  string approval = 1;
+  bool approval = 1;
 }
 
 message Preferences {
@@ -57,6 +57,7 @@ message Preferences {
 
 message UserPreferencesRequest {
   string userId = 1;
+  Preferences preferences = 2;
 }
 
 message UserPreferencesResponse {

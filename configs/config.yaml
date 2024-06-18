@@ -6,7 +6,7 @@ app:
 
 grpc:
   port: ":8080"
-  timeout: 10s
+  timeout: 5s
 
 postgres:
   poolMax: 2
