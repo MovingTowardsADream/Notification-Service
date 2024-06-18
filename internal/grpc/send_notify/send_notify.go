@@ -11,11 +11,15 @@ type sendNotifyRoutes struct {
 	notifyv1.UnimplementedSendNotifyServer
 }
 
-func Register(gRPC *grpc.Server) {
+func SendNotify(gRPC *grpc.Server) {
 	notifyv1.RegisterSendNotifyServer(gRPC, &sendNotifyRoutes{})
 }
 
 func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMessageRequest) (*notifyv1.SendMessageResponse, error) {
-	fmt.Println("implement this")
-	panic("implement this")
+
+	// TODO: Validate request
+
+	fmt.Println(req)
+
+	return nil, nil
 }

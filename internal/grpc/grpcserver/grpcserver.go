@@ -33,8 +33,8 @@ func New(log *slog.Logger, opts ...Option) *Server {
 
 	gRPCServer := grpc.NewServer()
 
-	grpc_send_notify.Register(gRPCServer)
-	grpc_users.Register(gRPCServer)
+	grpc_send_notify.SendNotify(gRPCServer)
+	grpc_users.Users(gRPCServer)
 
 	s.gRPCServer = gRPCServer
 
