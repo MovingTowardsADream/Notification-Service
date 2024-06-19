@@ -2,16 +2,12 @@ package grpc_users
 
 import (
 	"Notification_Service/internal/entity"
-	grpc_error "Notification_Service/internal/grpc/error"
+	"Notification_Service/internal/notify/grpc/error"
 	notifyv1 "Notification_Service/protos/gen/go/notify"
 	"context"
 	"errors"
 	"google.golang.org/grpc"
 )
-
-type EditInfo interface {
-	EditPreferences(ctx context.Context, preferences *notifyv1.UserPreferencesRequest) error
-}
 
 type userRoutes struct {
 	notifyv1.UnimplementedUsersServer

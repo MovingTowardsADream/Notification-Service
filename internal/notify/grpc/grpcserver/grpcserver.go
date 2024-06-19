@@ -1,8 +1,8 @@
 package grpcserver
 
 import (
-	grpc_send_notify "Notification_Service/internal/grpc/send_notify"
-	grpc_users "Notification_Service/internal/grpc/users"
+	"Notification_Service/internal/notify/grpc/send_notify"
+	"Notification_Service/internal/notify/grpc/users"
 	"fmt"
 	"google.golang.org/grpc"
 	"log/slog"

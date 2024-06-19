@@ -2,13 +2,13 @@ package app
 
 import (
 	"Notification_Service/configs"
-	"Notification_Service/internal/grpc/grpcserver"
+	grpcserver2 "Notification_Service/internal/notify/grpc/grpcserver"
 	"Notification_Service/pkg/postgres"
 	"log/slog"
 )
 
 type App struct {
-	Server *grpcserver.Server
+	Server *grpcserver2.Server
 	DB     *postgres.Postgres
 }
 
@@ -20,7 +20,7 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 		panic("app - New - postgres.NewPostgresDB: " + err.Error())
 	}
 
-	gRPCServer := grpcserver.New(l, grpcserver.Port(cfg.Port))
+	gRPCServer := grpcserver2.New(l, grpcserver2.Port(cfg.Port))
 
 	return &App{
 		Server: gRPCServer,
