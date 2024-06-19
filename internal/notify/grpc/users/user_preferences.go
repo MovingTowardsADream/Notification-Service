@@ -3,6 +3,7 @@ package grpc_users
 import (
 	"Notification_Service/internal/entity"
 	"Notification_Service/internal/notify/grpc/error"
+	"Notification_Service/internal/notify/usecase/usecase_errors"
 	notifyv1 "Notification_Service/protos/gen/go/notify"
 	"context"
 	"errors"
@@ -42,9 +43,9 @@ func (s *userRoutes) UserPreferences(ctx context.Context, req *notifyv1.UserPref
 	err := s.editInfo.EditUserPreferences(ctx, preferences)
 
 	if err != nil {
-		if errors.Is(err, entity.ErrTimeout) {
+		if errors.Is(err, usecase_errors.ErrTimeout) {
 			return nil, grpc_error.ErrDeadlineExceeded
-		} else if errors.Is(err, entity.ErrNotFound) {
+		} else if errors.Is(err, usecase_errors.ErrNotFound) {
 			return nil, grpc_error.ErrNotFound
 		}
 

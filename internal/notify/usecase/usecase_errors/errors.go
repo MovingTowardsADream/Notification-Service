@@ -1,4 +1,4 @@
-package entity
+package usecase_errors
 
 import (
 	"context"

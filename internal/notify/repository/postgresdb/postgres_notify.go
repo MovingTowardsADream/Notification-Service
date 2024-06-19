@@ -24,7 +24,25 @@ func NewNotifyRepo(pg *postgres.Postgres) *NotifyRepo {
 }
 
 func (r *NotifyRepo) GetUserCommunication(ctx context.Context, id string) (entity.UserCommunication, error) {
+	sql, args, _ := r.db.Builder.
+		Select("id", "email", "phone").
+		From(usersTable).
+		Where("id = ?", id).
+		ToSql()
+
 	var userCommunication entity.UserCommunication
+
+	err := r.db.Pool.QueryRow(ctx, sql, args...).Scan(
+		&userCommunication.ID,
+		&userCommunication.Email,
+		&userCommunication.Phone,
+	)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return entity.UserCommunication{}, repository_erros.ErrNotFound
+		}
+		return entity.UserCommunication{}, fmt.Errorf("NotifyRepo.GetUserCommunication - r.Pool.QueryRow: %v", err)
+	}
 
 	return userCommunication, nil
 }

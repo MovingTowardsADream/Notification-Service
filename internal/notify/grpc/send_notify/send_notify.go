@@ -3,6 +3,7 @@ package grpc_send_notify
 import (
 	"Notification_Service/internal/entity"
 	grpc_error "Notification_Service/internal/notify/grpc/error"
+	"Notification_Service/internal/notify/usecase/usecase_errors"
 	notifyv1 "Notification_Service/protos/gen/go/notify"
 	"context"
 	"errors"
@@ -39,8 +40,10 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 	err := s.notifySend.SendNotifyForUser(ctx, requestNotification)
 
 	if err != nil {
-		if errors.Is(err, entity.ErrTimeout) {
+		if errors.Is(err, usecase_errors.ErrTimeout) {
 			return nil, grpc_error.ErrDeadlineExceeded
+		} else if errors.Is(err, usecase_errors.ErrNotFound) {
+			return nil, grpc_error.ErrNotFound
 		}
 
 		// TODO logging error
