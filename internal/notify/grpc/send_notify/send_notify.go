@@ -22,7 +22,21 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 
 	// TODO: Validate request
 
-	err := s.notifySend.SendNotifyForUser(ctx, req)
+	requestNotification := &entity.RequestNotification{
+		UserId:     req.UserId,
+		NotifyType: string(req.NotifyType),
+		Channels: entity.Channels{
+			Mail: entity.MailChannel{
+				Subject: req.Channels.Mail.Subject,
+				Body:    req.Channels.Phone.Body,
+			},
+			Phone: entity.PhoneChannel{
+				Body: req.Channels.Phone.Body,
+			},
+		},
+	}
+
+	err := s.notifySend.SendNotifyForUser(ctx, requestNotification)
 
 	if err != nil {
 		if errors.Is(err, entity.ErrTimeout) {
@@ -32,7 +46,6 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 		// TODO logging error
 
 		return nil, grpc_error.ErrInternalServer
-
 	}
 
 	return &notifyv1.SendMessageResponse{

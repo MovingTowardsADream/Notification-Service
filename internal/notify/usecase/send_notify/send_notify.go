@@ -1,7 +1,7 @@
 package send_notify
 
 import (
-	notifyv1 "Notification_Service/protos/gen/go/notify"
+	"Notification_Service/internal/entity"
 	"context"
 	"log/slog"
 )
@@ -18,7 +18,7 @@ func New(l *slog.Logger, usersDataComm UsersDataCommunication) *NotifySend {
 	}
 }
 
-func (n *NotifySend) SendNotifyForUser(ctx context.Context, notifyRequest *notifyv1.SendMessageRequest) error {
+func (n *NotifySend) SendNotifyForUser(ctx context.Context, notifyRequest *entity.RequestNotification) error {
 
 	userCommunication, err := n.usersDataComm.GetUserCommunication(ctx, notifyRequest.UserId)
 

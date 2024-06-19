@@ -1,10 +1,10 @@
 package grpc_send_notify
 
 import (
-	notifyv1 "Notification_Service/protos/gen/go/notify"
+	"Notification_Service/internal/entity"
 	"context"
 )
 
 type NotifySend interface {
-	SendNotifyForUser(ctx context.Context, notifyRequest *notifyv1.SendMessageRequest) error
+	SendNotifyForUser(ctx context.Context, notifyRequest *entity.RequestNotification) error
 }
