@@ -22,7 +22,7 @@ func (s *userRoutes) UserPreferences(ctx context.Context, req *notifyv1.UserPref
 
 	// TODO: Validate request
 
-	err := s.editInfo.EditPreferences(ctx, req)
+	err := s.editInfo.EditUserPreferences(ctx, req)
 
 	if err != nil {
 		if errors.Is(err, entity.ErrTimeout) {

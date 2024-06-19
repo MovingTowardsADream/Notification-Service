@@ -3,6 +3,9 @@ package app
 import (
 	"Notification_Service/configs"
 	grpcserver2 "Notification_Service/internal/notify/grpc/grpcserver"
+	"Notification_Service/internal/notify/repository/postgresdb"
+	"Notification_Service/internal/notify/usecase/edit_info"
+	"Notification_Service/internal/notify/usecase/send_notify"
 	"Notification_Service/pkg/postgres"
 	"log/slog"
 )
@@ -20,7 +23,12 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 		panic("app - New - postgres.NewPostgresDB: " + err.Error())
 	}
 
-	gRPCServer := grpcserver2.New(l, grpcserver2.Port(cfg.Port))
+	notifyRepo := postgresdb.NewNotifyRepo(pg)
+
+	notifySend := send_notify.New(l, notifyRepo)
+	editInfo := edit_info.New(l, notifyRepo)
+
+	gRPCServer := grpcserver2.New(l, notifySend, editInfo, grpcserver2.Port(cfg.Port))
 
 	return &App{
 		Server: gRPCServer,

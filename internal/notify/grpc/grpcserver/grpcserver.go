@@ -20,7 +20,7 @@ type Server struct {
 	port string
 }
 
-func New(log *slog.Logger, opts ...Option) *Server {
+func New(log *slog.Logger, notifySend grpc_send_notify.NotifySend, editInfo grpc_users.EditInfo, opts ...Option) *Server {
 
 	s := &Server{
 		log:  log,
@@ -33,8 +33,8 @@ func New(log *slog.Logger, opts ...Option) *Server {
 
 	gRPCServer := grpc.NewServer()
 
-	grpc_send_notify.SendNotify(gRPCServer)
-	grpc_users.Users(gRPCServer)
+	grpc_send_notify.SendNotify(gRPCServer, notifySend)
+	grpc_users.Users(gRPCServer, editInfo)
 
 	s.gRPCServer = gRPCServer
 
