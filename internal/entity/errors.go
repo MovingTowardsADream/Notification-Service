@@ -1,8 +1,12 @@
 package entity
 
-import "context"
+import (
+	"context"
+	"errors"
+)
 
 var (
 	// Request errors
-	ErrTimeout = context.DeadlineExceeded
+	ErrTimeout  = context.DeadlineExceeded
+	ErrNotFound = errors.New("Not found")
 )

@@ -1,9 +1,14 @@
 package edit_info
 
 import (
-	notifyv1 "Notification_Service/protos/gen/go/notify"
+	"Notification_Service/internal/entity"
 	"context"
 	"log/slog"
+	"time"
+)
+
+const (
+	_defaultTimeout = 5 * time.Second
 )
 
 type EditInfo struct {
@@ -18,13 +23,11 @@ func New(l *slog.Logger, usersDataPref UsersDataPreferences) *EditInfo {
 	}
 }
 
-func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *notifyv1.UserPreferencesRequest) error {
-
-	_ = e.usersDataPref.EditUserPreferences(ctx, preferences)
+func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *entity.UserPreferences) error {
+	ctxTimeout, cancel := context.WithTimeout(ctx, _defaultTimeout)
+	defer cancel()
 
 	// TODO logging
 
-	// TODO other logic
-
-	return nil
+	return e.usersDataPref.EditUserPreferences(ctxTimeout, preferences)
 }

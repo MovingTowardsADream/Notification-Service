@@ -1,10 +1,10 @@
 package edit_info
 
 import (
-	notifyv1 "Notification_Service/protos/gen/go/notify"
+	"Notification_Service/internal/entity"
 	"context"
 )
 
 type UsersDataPreferences interface {
-	EditUserPreferences(ctx context.Context, preferences *notifyv1.UserPreferencesRequest) error
+	EditUserPreferences(ctx context.Context, preferences *entity.UserPreferences) error
 }

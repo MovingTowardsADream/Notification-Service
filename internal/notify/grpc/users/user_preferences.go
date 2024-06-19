@@ -22,11 +22,30 @@ func (s *userRoutes) UserPreferences(ctx context.Context, req *notifyv1.UserPref
 
 	// TODO: Validate request
 
-	err := s.editInfo.EditUserPreferences(ctx, req)
+	preferences := &entity.UserPreferences{
+		UserId:      req.UserId,
+		Preferences: entity.Preferences{},
+	}
+
+	if req.Preferences.Mail != nil {
+		preferences.Preferences.Mail = &entity.MailPreference{
+			Approval: req.Preferences.Mail.Approval,
+		}
+	}
+
+	if req.Preferences.Phone != nil {
+		preferences.Preferences.Phone = &entity.PhonePreference{
+			Approval: req.Preferences.Phone.Approval,
+		}
+	}
+
+	err := s.editInfo.EditUserPreferences(ctx, preferences)
 
 	if err != nil {
 		if errors.Is(err, entity.ErrTimeout) {
 			return nil, grpc_error.ErrDeadlineExceeded
+		} else if errors.Is(err, entity.ErrNotFound) {
+			return nil, grpc_error.ErrNotFound
 		}
 
 		// TODO logging error

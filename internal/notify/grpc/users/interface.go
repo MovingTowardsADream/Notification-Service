@@ -1,10 +1,10 @@
 package grpc_users
 
 import (
-	notifyv1 "Notification_Service/protos/gen/go/notify"
+	"Notification_Service/internal/entity"
 	"context"
 )
 
 type EditInfo interface {
-	EditUserPreferences(ctx context.Context, preferences *notifyv1.UserPreferencesRequest) error
+	EditUserPreferences(ctx context.Context, preferences *entity.UserPreferences) error
 }

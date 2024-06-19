@@ -21,7 +21,7 @@ func main() {
 
 	// Run servers
 	go func() {
-		application.Server.MustRun()
+		application.Server.Run()
 	}()
 
 	//go func() {
