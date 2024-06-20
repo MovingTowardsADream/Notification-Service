@@ -10,6 +10,7 @@ A notification service is a software system that manages the sending of notifica
 To run an application in a container, you need to configure the command:
 ```bash
 make build
+make migration-new-db
 ```
 
 ## Environment Variables and Configuration
