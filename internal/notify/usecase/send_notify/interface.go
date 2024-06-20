@@ -11,6 +11,7 @@ type (
 	}
 
 	NotifyGateway interface {
-		CreateNotifyMessageOnRabbitMQ(ctx context.Context, notify entity.Notify) error
+		CreateNotifyMailMessageOnRabbitMQ(ctx context.Context, notify entity.MailDate) error
+		CreateNotifyPhoneMessageOnRabbitMQ(ctx context.Context, notify entity.PhoneDate) error
 	}
 )

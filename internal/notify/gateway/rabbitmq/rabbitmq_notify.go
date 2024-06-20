@@ -18,13 +18,25 @@ func New(rmq NotifyGatewayRMQ) *NotifyGateway {
 	return &NotifyGateway{rmq}
 }
 
-func (gw *NotifyGateway) CreateNotifyMessageOnRabbitMQ(ctx context.Context, notify entity.Notify) error {
+func (gw *NotifyGateway) CreateNotifyMailMessageOnRabbitMQ(ctx context.Context, notify entity.MailDate) error {
 	err := wrapper(ctx, func() error {
-		return gw.rmq.RemoteCall(ctx, "createNewNotify", notify)
+		return gw.rmq.RemoteCall(ctx, "createNewMailNotify", notify)
 	})
 
 	if err != nil {
-		return fmt.Errorf("NotifyGateway - CreateNotifyMessageOnRabbitMQ - gw.rmq.RemoteCall: %w", err)
+		return fmt.Errorf("NotifyGateway - CreateNotifyMailMessageOnRabbitMQ - gw.rmq.RemoteCall: %w", err)
+	}
+
+	return nil
+}
+
+func (gw *NotifyGateway) CreateNotifyPhoneMessageOnRabbitMQ(ctx context.Context, notify entity.PhoneDate) error {
+	err := wrapper(ctx, func() error {
+		return gw.rmq.RemoteCall(ctx, "createNewPhoneNotify", notify)
+	})
+
+	if err != nil {
+		return fmt.Errorf("NotifyGateway - CreateNotifyPhoneMessageOnRabbitMQ - gw.rmq.RemoteCall: %w", err)
 	}
 
 	return nil

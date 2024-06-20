@@ -48,35 +48,33 @@ func (n *NotifySend) SendNotifyForUser(ctx context.Context, notifyRequest *entit
 		return err
 	}
 
-	var mail *entity.MailDate
-	var phone *entity.PhoneDate
-
 	if userCommunication.MailPref {
-		mail = &entity.MailDate{
+		mail_notify := entity.MailDate{
 			Mail:       userCommunication.Email,
 			NotifyType: notifyRequest.NotifyType,
 			Subject:    notifyRequest.Channels.Mail.Subject,
 			Body:       notifyRequest.Channels.Mail.Body,
 		}
+
+		err = n.gateway.CreateNotifyMailMessageOnRabbitMQ(ctxTimeout, mail_notify)
+
+		if err != nil {
+			return fmt.Errorf("UseCase - SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
+		}
 	}
 
 	if userCommunication.PhonePref {
-		phone = &entity.PhoneDate{
+		phone_notify := entity.PhoneDate{
 			Phone:      userCommunication.Phone,
 			NotifyType: notifyRequest.NotifyType,
 			Body:       notifyRequest.Channels.Phone.Body,
 		}
-	}
 
-	notify := entity.Notify{
-		MailDate:  mail,
-		PhoneDate: phone,
-	}
+		err = n.gateway.CreateNotifyPhoneMessageOnRabbitMQ(ctxTimeout, phone_notify)
 
-	err = n.gateway.CreateNotifyMessageOnRabbitMQ(ctxTimeout, notify)
-
-	if err != nil {
-		return fmt.Errorf("UseCase - SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
+		if err != nil {
+			return fmt.Errorf("UseCase - SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
+		}
 	}
 
 	return nil

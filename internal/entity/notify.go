@@ -13,9 +13,4 @@ type (
 		NotifyType string `json:"notify_type"`
 		Body       string `json:"body"`
 	}
-
-	Notify struct {
-		MailDate  *MailDate  `json:"mail_date"`
-		PhoneDate *PhoneDate `json:"phone_date"`
-	}
 )
