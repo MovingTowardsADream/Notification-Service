@@ -4,7 +4,6 @@ import (
 	"Notification_Service/internal/entity"
 	"context"
 	"fmt"
-	"time"
 )
 
 type NotifyWorker interface {
@@ -20,14 +19,12 @@ func NewNotifyWorker() *NotifyWorkerUseCase {
 }
 
 func (uc *NotifyWorkerUseCase) CreateNewMailNotify(ctx context.Context, notify entity.MailDate) error {
-	time.Sleep(1 * time.Second)
 	fmt.Println("SEND MESSAGE ON MAIL: ", notify)
 
 	return nil
 }
 
 func (uc *NotifyWorkerUseCase) CreateNewPhoneNotify(ctx context.Context, notify entity.PhoneDate) error {
-	time.Sleep(1 * time.Second)
 	fmt.Println("SEND MESSAGE ON PHONE: ", notify)
 
 	return nil
