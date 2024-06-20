@@ -7,6 +7,8 @@ import (
 	"Notification_Service/internal/notify/repository/postgresdb"
 	"Notification_Service/internal/notify/usecase/edit_info"
 	"Notification_Service/internal/notify/usecase/send_notify"
+	"Notification_Service/internal/notifyWorkers/controller/amqp_rpc"
+	"Notification_Service/internal/notifyWorkers/usecase"
 	"Notification_Service/pkg/postgres"
 	rmq_client "Notification_Service/pkg/rabbitmq/client"
 	rmq_server "Notification_Service/pkg/rabbitmq/server"
@@ -41,8 +43,25 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 
 	gRPCServer := grpcserver2.New(l, notifySend, editInfo, grpcserver2.Port(cfg.Port))
 
+	workerUseCase := usecase.NewNotifyWorker()
+
+	// Init rabbitMQ RPC Server
+	rmqRouter := amqp_rpc.NewRouter(workerUseCase)
+
+	rmqServer, err := rmq_server.New(
+		cfg.RMQ.URL,
+		cfg.RMQ.ServerExchange,
+		rmqRouter,
+		l,
+		rmq_server.DefaultGoroutinesCount(cfg.App.CountWorkers),
+	)
+	if err != nil {
+		panic("app - Run - rmqServer - server.New" + err.Error())
+	}
+
 	return &App{
-		Server: gRPCServer,
-		DB:     pg,
+		Server:    gRPCServer,
+		RMQServer: rmqServer,
+		DB:        pg,
 	}
 }

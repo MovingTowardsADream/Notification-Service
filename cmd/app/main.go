@@ -24,9 +24,9 @@ func main() {
 		application.Server.Run()
 	}()
 
-	//go func() {
-	//	application.RMQServer.MustRun()
-	//}()
+	go func() {
+		application.RMQServer.MustRun()
+	}()
 
 	// Graceful shutdown
 	stop := make(chan os.Signal, 1)
@@ -34,14 +34,14 @@ func main() {
 
 	select {
 	case <-stop:
-		//case <-application.RMQServer.Notify():
+	case <-application.RMQServer.Notify():
 	}
 
 	log.Info("Starting graceful shutdown")
 
-	//if err := application.RMQServer.Shutdown(); err != nil {
-	//	log.Error("RMQServer.Shutdown error", logger.Err(err))
-	//}
+	if err := application.RMQServer.Shutdown(); err != nil {
+		log.Error("RMQServer.Shutdown error", logger.Err(err))
+	}
 
 	application.Server.Shutdown()
 
