@@ -30,7 +30,7 @@ func main() {
 
 	m, err := migrate.New(
 		"file://"+migrationsPath,
-		fmt.Sprintf(cfg.PG.URL),
+		fmt.Sprintf(cfg.PG.MigrationURL),
 	)
 	if err != nil {
 		panic(err)

@@ -35,8 +35,9 @@ type (
 	}
 
 	PG struct {
-		PoolMax int    `env:"PG_POOL_MAX" env-default:"2"     yaml:"poolMax"`
-		URL     string `env:"PG_URL"      env-required:"true" yaml:"url"`
+		PoolMax      int    `env:"PG_POOL_MAX" env-default:"2"     yaml:"poolMax"`
+		URL          string `env:"PG_URL"      env-required:"true" yaml:"url"`
+		MigrationURL string `env:"MIG_PG_URL" env-required:"true" yaml:"migrationUrl"`
 	}
 
 	RMQ struct {
