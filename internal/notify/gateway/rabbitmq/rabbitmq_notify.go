@@ -1,4 +1,4 @@
-package rabbitmq
+package gateway_rabbitmq
 
 import (
 	"Notification_Service/internal/entity"

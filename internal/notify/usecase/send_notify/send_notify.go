@@ -19,12 +19,14 @@ const (
 type NotifySend struct {
 	l             *slog.Logger
 	usersDataComm UsersDataCommunication
+	gateway       NotifyGateway
 }
 
-func New(l *slog.Logger, usersDataComm UsersDataCommunication) *NotifySend {
+func New(l *slog.Logger, usersDataComm UsersDataCommunication, gateway NotifyGateway) *NotifySend {
 	return &NotifySend{
 		l:             l,
 		usersDataComm: usersDataComm,
+		gateway:       gateway,
 	}
 }
 
@@ -71,9 +73,11 @@ func (n *NotifySend) SendNotifyForUser(ctx context.Context, notifyRequest *entit
 		PhoneDate: phone,
 	}
 
-	// TODO Gateway
+	err = n.gateway.CreateNotifyMessageOnRabbitMQ(ctxTimeout, notify)
 
-	fmt.Println(notify.PhoneDate, notify.MailDate)
+	if err != nil {
+		return fmt.Errorf("UseCase - SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
+	}
 
 	return nil
 }

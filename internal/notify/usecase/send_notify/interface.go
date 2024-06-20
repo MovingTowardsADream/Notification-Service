@@ -5,6 +5,12 @@ import (
 	"context"
 )
 
-type UsersDataCommunication interface {
-	GetUserCommunication(ctx context.Context, id string) (entity.UserCommunication, error)
-}
+type (
+	UsersDataCommunication interface {
+		GetUserCommunication(ctx context.Context, id string) (entity.UserCommunication, error)
+	}
+
+	NotifyGateway interface {
+		CreateNotifyMessageOnRabbitMQ(ctx context.Context, notify entity.Notify) error
+	}
+)
