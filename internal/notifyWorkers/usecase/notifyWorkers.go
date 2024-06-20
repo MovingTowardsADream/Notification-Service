@@ -19,12 +19,18 @@ func NewNotifyWorker() *NotifyWorkerUseCase {
 }
 
 func (uc *NotifyWorkerUseCase) CreateNewMailNotify(ctx context.Context, notify entity.MailDate) error {
+
+	// TODO Send message on mail
+
 	fmt.Println("SEND MESSAGE ON MAIL: ", notify)
 
 	return nil
 }
 
 func (uc *NotifyWorkerUseCase) CreateNewPhoneNotify(ctx context.Context, notify entity.PhoneDate) error {
+
+	// TODO Send message on phone
+
 	fmt.Println("SEND MESSAGE ON PHONE: ", notify)
 
 	return nil
