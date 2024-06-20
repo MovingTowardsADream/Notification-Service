@@ -46,8 +46,6 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 			return nil, grpc_error.ErrNotFound
 		}
 
-		// TODO logging error
-
 		return nil, grpc_error.ErrInternalServer
 	}
 

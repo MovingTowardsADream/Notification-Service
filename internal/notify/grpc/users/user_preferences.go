@@ -49,8 +49,6 @@ func (s *userRoutes) UserPreferences(ctx context.Context, req *notifyv1.UserPref
 			return nil, grpc_error.ErrNotFound
 		}
 
-		// TODO logging error
-
 		return nil, grpc_error.ErrInternalServer
 
 	}
