@@ -1,4 +1,4 @@
-package rabbitmq
+package rmq_rpc
 
 import (
 	"fmt"
@@ -51,13 +51,13 @@ func (c *Connection) AttemptConnect() error {
 func (c *Connection) connect() error {
 	var err error
 
-	// Установка соединения с сервером RabbitMQ
+	// Establishing a connection to the RabbitMQ server
 	c.Connection, err = amqp.Dial(c.URL)
 	if err != nil {
 		return fmt.Errorf("amqp.Dial: %w", err)
 	}
 
-	// Открытие канала для связи
+	// Open a communication channel
 	c.Channel, err = c.Connection.Channel()
 	if err != nil {
 		return fmt.Errorf("c.Connection.Channel: %w", err)
@@ -65,8 +65,8 @@ func (c *Connection) connect() error {
 
 	err = c.Channel.ExchangeDeclare(
 		c.ConsumerExchange,
-		"fanout", // доставляет сообщения всем связанным очередям
-		false,
+		"fanout",
+		true,
 		false,
 		false,
 		false,
@@ -76,10 +76,10 @@ func (c *Connection) connect() error {
 		return fmt.Errorf("c.Connection.Channel: %w", err)
 	}
 
-	// Объявляет временную очередь, которая удалится после закрытия соединения
+	// Declares a queue to receive messages from the exchange
 	queue, err := c.Channel.QueueDeclare(
 		"",
-		false,
+		true,
 		false,
 		true,
 		false,
@@ -101,8 +101,8 @@ func (c *Connection) connect() error {
 		return fmt.Errorf("c.Channel.QueueBind: %w", err)
 	}
 
-	// Запускает потребление сообщений из очереди, предоставляя канал c.Delivery,
-	// через который будут доступны полученные сообщения.
+	// Starts consuming messages from the queue, providing a c.Delivery channel
+	// through which received messages will be available.
 	c.Delivery, err = c.Channel.Consume(
 		queue.Name,
 		"",
