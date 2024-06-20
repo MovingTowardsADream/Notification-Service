@@ -17,10 +17,12 @@ CREATE TABLE IF NOT EXISTS users
     id TEXT DEFAULT make_uid()::text NOT NULL UNIQUE,
     username TEXT not null unique,
     email TEXT not null unique,
-    phone varchar(11) not null unique,
+    phone varchar(12) not null unique,
     password_hash TEXT not null,
     time TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE INDEX IF NOT EXISTS users_idx ON users(id);
 
 CREATE TABLE IF NOT EXISTS notifications
 (

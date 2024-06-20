@@ -2,6 +2,8 @@ module Notification_Service
 
 go 1.22
 
+replace github.com/imdario/mergo => dario.cat/mergo v1.0.0
+
 require (
 	github.com/Masterminds/squirrel v1.5.4
 	github.com/go-playground/validator/v10 v10.22.0

@@ -4,6 +4,7 @@ package notify;
 
 option go_package = "notify.v1;notifyv1";
 
+// The SendNotify service provides methods for sending notifications
 service SendNotify {
   rpc SendMessage (SendMessageRequest) returns (SendMessageResponse);
 }
@@ -28,16 +29,19 @@ message Channels {
   PhoneNotify phone = 2;
 }
 
+// The SendMessageRequest message contains the information necessary to send the notification
 message SendMessageRequest {
   string userId = 1;
   NotifyType notifyType = 2;
   Channels channels = 3;
 }
 
+// The SendMessageResponse message contains information about the result of sending the notification
 message SendMessageResponse{
   string respond = 1;
 }
 
+// The Users service provides methods for working with user preferences
 service Users {
  rpc UserPreferences (UserPreferencesRequest) returns (UserPreferencesResponse);
 }
@@ -55,11 +59,13 @@ message Preferences {
   PhoneApproval phone = 2;
 }
 
+// The UserPreferencesRequest message contains information about the user's preferences
 message UserPreferencesRequest {
   string userId = 1;
   Preferences preferences = 2;
 }
 
+// The UserPreferencesResponse message contains information about the result of changing the user's preferences
 message UserPreferencesResponse {
   string respond = 1;
 }

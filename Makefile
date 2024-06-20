@@ -13,3 +13,6 @@ build: compose-up
 
 migration-new-db:
 	go run ./cmd/migrator/main.go
+
+docs_create:
+	protoc --doc_out=./docs --doc_opt=markdown,docs.md ./protos/proto/notify/notify.proto
