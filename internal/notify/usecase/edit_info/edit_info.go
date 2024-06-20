@@ -4,9 +4,9 @@ import (
 	"Notification_Service/internal/entity"
 	"Notification_Service/internal/notify/repository/repository_erros"
 	"Notification_Service/internal/notify/usecase/usecase_errors"
+	"Notification_Service/pkg/logger"
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 )
@@ -40,9 +40,9 @@ func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *entity.
 			return usecase_errors.ErrNotFound
 		}
 
-		// TODO logging error
+		e.l.Error("EditUserPreferences - e.usersDataPref.EditUserPreferences: ", logger.Err(err))
 
-		return fmt.Errorf("UseCase - EditInfo - EditUserPreferences - e.usersDataPref.EditUserPreferences: %w", err)
+		return err
 	}
 
 	return nil

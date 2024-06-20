@@ -29,7 +29,7 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 		Channels: entity.Channels{
 			Mail: entity.MailChannel{
 				Subject: req.Channels.Mail.Subject,
-				Body:    req.Channels.Phone.Body,
+				Body:    req.Channels.Mail.Body,
 			},
 			Phone: entity.PhoneChannel{
 				Body: req.Channels.Phone.Body,

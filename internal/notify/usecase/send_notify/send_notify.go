@@ -4,6 +4,7 @@ import (
 	"Notification_Service/internal/entity"
 	"Notification_Service/internal/notify/repository/repository_erros"
 	"Notification_Service/internal/notify/usecase/usecase_errors"
+	"Notification_Service/pkg/logger"
 	"context"
 	"errors"
 	"fmt"
@@ -40,14 +41,39 @@ func (n *NotifySend) SendNotifyForUser(ctx context.Context, notifyRequest *entit
 			return usecase_errors.ErrNotFound
 		}
 
-		// TODO logging error
+		n.l.Error("SendNotifyForUsers - n.usersDataComm.GetUserCommunication: ", logger.Err(err))
 
-		return fmt.Errorf("UseCase - NotifySend - SendNotifyForUsers - n.usersDataComm.GetUserCommunication: %w", err)
+		return err
+	}
+
+	var mail *entity.MailDate
+	var phone *entity.PhoneDate
+
+	if userCommunication.MailPref {
+		mail = &entity.MailDate{
+			Mail:       userCommunication.Email,
+			NotifyType: notifyRequest.NotifyType,
+			Subject:    notifyRequest.Channels.Mail.Subject,
+			Body:       notifyRequest.Channels.Mail.Body,
+		}
+	}
+
+	if userCommunication.PhonePref {
+		phone = &entity.PhoneDate{
+			Phone:      userCommunication.Phone,
+			NotifyType: notifyRequest.NotifyType,
+			Body:       notifyRequest.Channels.Phone.Body,
+		}
+	}
+
+	notify := entity.Notify{
+		MailDate:  mail,
+		PhoneDate: phone,
 	}
 
 	// TODO Gateway
 
-	_ = userCommunication
+	fmt.Println(notify.PhoneDate, notify.MailDate)
 
 	return nil
 }

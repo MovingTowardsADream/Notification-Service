@@ -25,9 +25,10 @@ func NewNotifyRepo(pg *postgres.Postgres) *NotifyRepo {
 
 func (r *NotifyRepo) GetUserCommunication(ctx context.Context, id string) (entity.UserCommunication, error) {
 	sql, args, _ := r.db.Builder.
-		Select("id", "email", "phone").
+		Select("users.id", "users.email", "users.phone", "notifications.email_notify", "notifications.phone_notify").
 		From(usersTable).
-		Where("id = ?", id).
+		InnerJoin("notifications on users.id = notifications.user_id").
+		Where("users.id = ?", id).
 		ToSql()
 
 	var userCommunication entity.UserCommunication
@@ -36,6 +37,8 @@ func (r *NotifyRepo) GetUserCommunication(ctx context.Context, id string) (entit
 		&userCommunication.ID,
 		&userCommunication.Email,
 		&userCommunication.Phone,
+		&userCommunication.MailPref,
+		&userCommunication.PhonePref,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
