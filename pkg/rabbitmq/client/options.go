@@ -1,4 +1,4 @@
-package client
+package rmq_client
 
 import "time"
 

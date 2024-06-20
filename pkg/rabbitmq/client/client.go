@@ -1,4 +1,4 @@
-package client
+package rmq_client
 
 import (
 	rmq_rpc "Notification_Service/pkg/rabbitmq"
