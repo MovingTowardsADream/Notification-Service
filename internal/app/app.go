@@ -15,6 +15,8 @@ import (
 	"log/slog"
 )
 
+const _defaultPathToMigrate = "./schema/0000001_init.up.sql"
+
 type App struct {
 	Server    *grpcserver2.Server
 	RMQServer *rmq_server.Server
@@ -27,6 +29,12 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 	pg, err := postgres.NewPostgresDB(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
 	if err != nil {
 		panic("app - New - postgres.NewPostgresDB: " + err.Error())
+	}
+
+	// Migrate database schema
+	err = pg.Migrate(_defaultPathToMigrate)
+	if err != nil {
+		panic("app - Run - pg.Migrate: " + err.Error())
 	}
 
 	rmqClient, err := rmq_client.NewRabbitMQClient(cfg.RMQ.URL, cfg.RMQ.ServerExchange, cfg.RMQ.ClientExchange)
