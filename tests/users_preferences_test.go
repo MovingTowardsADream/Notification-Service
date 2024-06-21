@@ -45,4 +45,4 @@ func TestUsersPreferences_NotFound(t *testing.T) {
 	require.ErrorContains(t, err, "object not found")
 }
 
-// TODO Validation test
+// TODO Testing invalid arguments in table driven tests
