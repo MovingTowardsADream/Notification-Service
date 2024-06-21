@@ -8,14 +8,14 @@ import (
 	"testing"
 )
 
-func TestUsersPreferences(t *testing.T) {
+func TestUsersPreferences_GoodOutcome(t *testing.T) {
 	ctx, st := suite.New(t)
 
 	response, err := st.UsersClient.UserPreferences(ctx, &notifyv1.UserPreferencesRequest{
-		UserId: "2a17e4039bfc401e9f5b056f9e3732d2",
+		UserId: "c3e72e9a467a8f4d327fyc6ba1c66e7u",
 		Preferences: &notifyv1.Preferences{
 			Mail: &notifyv1.MailApproval{
-				Approval: true,
+				Approval: false,
 			},
 			Phone: &notifyv1.PhoneApproval{
 				Approval: true,
@@ -26,3 +26,23 @@ func TestUsersPreferences(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "success", response.Respond)
 }
+
+func TestUsersPreferences_NotFound(t *testing.T) {
+	ctx, st := suite.New(t)
+
+	_, err := st.UsersClient.UserPreferences(ctx, &notifyv1.UserPreferencesRequest{
+		UserId: "id_not_exist",
+		Preferences: &notifyv1.Preferences{
+			Mail: &notifyv1.MailApproval{
+				Approval: true,
+			},
+			Phone: &notifyv1.PhoneApproval{
+				Approval: true,
+			},
+		},
+	})
+
+	require.ErrorContains(t, err, "object not found")
+}
+
+// TODO Validation test

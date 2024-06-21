@@ -6,7 +6,6 @@ import (
 	"context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"net"
 	"testing"
 )
 
@@ -22,7 +21,7 @@ func New(t *testing.T) (context.Context, *Suite) {
 	t.Helper()
 	t.Parallel()
 
-	cfg := configs.MustLoad()
+	cfg := configs.MustLoadPath("../configs/config.yaml", "../.env")
 
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.GRPC.Timeout)
 
@@ -33,7 +32,7 @@ func New(t *testing.T) (context.Context, *Suite) {
 	})
 
 	cc, err := grpc.DialContext(context.Background(),
-		net.JoinHostPort(_default_gRPC_Host, cfg.Port),
+		_default_gRPC_Host+cfg.Port,
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
