@@ -12,10 +12,15 @@ import (
 	"Notification_Service/pkg/postgres"
 	rmq_client "Notification_Service/pkg/rabbitmq/client"
 	rmq_server "Notification_Service/pkg/rabbitmq/server"
+	"errors"
+	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"log/slog"
 )
 
-const _defaultPathToMigrate = "./schema/0000001_init.up.sql"
+const defaultPathToMigrate = "./schema"
 
 type App struct {
 	Server    *grpcserver2.Server
@@ -28,13 +33,13 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 	// Connect postgres db
 	pg, err := postgres.NewPostgresDB(cfg.PG.URL, postgres.MaxPoolSize(cfg.PG.PoolMax))
 	if err != nil {
-		panic("app - New - postgres.NewPostgresDB: " + err.Error())
+		panic("app - Run - postgres.NewPostgresDB: " + err.Error())
 	}
 
 	// Migrate database schema
-	err = pg.Migrate(_defaultPathToMigrate)
+	err = Migrate(defaultPathToMigrate, cfg.PG.URL)
 	if err != nil {
-		panic("app - Run - pg.Migrate: " + err.Error())
+		panic("app - New - Migrate: " + err.Error())
 	}
 
 	rmqClient, err := rmq_client.NewRabbitMQClient(cfg.RMQ.URL, cfg.RMQ.ServerExchange, cfg.RMQ.ClientExchange)
@@ -72,4 +77,24 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 		RMQServer: rmqServer,
 		DB:        pg,
 	}
+}
+
+func Migrate(migrationsPath, url string) error {
+	m, err := migrate.New(
+		"file://"+migrationsPath,
+		fmt.Sprintf(url),
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil {
+		if errors.Is(err, migrate.ErrNoChange) {
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
 }

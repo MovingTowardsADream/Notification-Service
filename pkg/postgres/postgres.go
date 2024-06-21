@@ -8,7 +8,6 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
-	"os"
 	"time"
 )
 
@@ -76,20 +75,6 @@ func NewPostgresDB(url string, opts ...Option) (*Postgres, error) {
 	}
 
 	return pg, nil
-}
-
-func (p *Postgres) Migrate(filePath string) error {
-	c, err := os.ReadFile(filePath)
-	if err != nil {
-		return fmt.Errorf("postgres - Migrate - os.ReadFile: %w", err)
-	}
-
-	_, err = p.Pool.Exec(context.Background(), string(c))
-	if err != nil {
-		return fmt.Errorf("postgres - Migrate - pg.DB.Exec: %w", err)
-	}
-
-	return nil
 }
 
 func (p *Postgres) Close() {
