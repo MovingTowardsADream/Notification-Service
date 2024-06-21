@@ -11,10 +11,6 @@ To run an application in a container, you need to configure the command:
 ```bash
 make build
 ```
-If you are launching the application for the first time, do not forget to make the migration:
-```bash
-make migration-new-db
-```
 
 ## Environment Variables and Configuration
 For the application to work correctly, you must specify environment variables in the .env file in the root directory. Below are the variables themselves and a brief description:
