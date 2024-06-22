@@ -32,7 +32,12 @@ func New(log *slog.Logger, notifySend grpc_send_notify.NotifySend, editInfo grpc
 		opt(s)
 	}
 
-	gRPCServer := grpc.NewServer()
+	gRPCServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			s.loggingInterceptor,
+			s.recoveryInterceptor,
+		),
+	)
 
 	validator := custom_validator.NewCustomValidator()
 
