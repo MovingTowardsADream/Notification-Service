@@ -1,0 +1,33 @@
+name: Deploy Notifications Service
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deployment'
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HOST: ${{ secrets.HOST }}
+      DEPLOY_DIRECTORY: /root/apps/notify-service
+      CONFIG_PATH: /root/apps/notify-service/configs/config.yaml
+      ENV_PATH: /root/apps/notify-service/.env
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag }}
+      - name: Check if tag exists
+        run: |
+          git fetch --all --tags
+          if ! git tag | grep -q "^${{ github.event.inputs.tag }}$"; then
+            echo "error: Tag '${{ github.event.inputs.tag }}' not found"
+            exit 1
+          fi
+      - name: Build and run Docker Compose
+        run: |
+          make build
