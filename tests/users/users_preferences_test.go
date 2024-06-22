@@ -1,8 +1,8 @@
-package tests
+package users
 
 import (
 	notifyv1 "Notification_Service/protos/gen/go/notify"
-	"Notification_Service/tests/suite"
+	"Notification_Service/tests/users/suite"
 	"github.com/go-playground/assert/v2"
 	"github.com/stretchr/testify/require"
 	"testing"

@@ -3,6 +3,7 @@ package grpcserver
 import (
 	"Notification_Service/internal/notify/grpc/send_notify"
 	"Notification_Service/internal/notify/grpc/users"
+	custom_validator "Notification_Service/pkg/validator"
 	"fmt"
 	"google.golang.org/grpc"
 	"log/slog"
@@ -33,8 +34,10 @@ func New(log *slog.Logger, notifySend grpc_send_notify.NotifySend, editInfo grpc
 
 	gRPCServer := grpc.NewServer()
 
-	grpc_send_notify.SendNotify(gRPCServer, notifySend)
-	grpc_users.Users(gRPCServer, editInfo)
+	validator := custom_validator.NewCustomValidator()
+
+	grpc_send_notify.SendNotify(gRPCServer, notifySend, validator)
+	grpc_users.Users(gRPCServer, editInfo, validator)
 
 	s.gRPCServer = gRPCServer
 

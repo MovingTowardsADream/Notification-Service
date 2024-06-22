@@ -17,12 +17,21 @@ func NewCustomValidator() *CustomValidator {
 	return cv
 }
 
-func (cv *CustomValidator) ValidateStruct(obj interface{}) error {
-	err := cv.v.Struct(obj)
+func (cv *CustomValidator) Validate(i interface{}) error {
+	err := cv.v.Struct(i)
 	if err != nil {
 		fieldErr := err.(validator.ValidationErrors)[0]
 
-		return fmt.Errorf(fieldErr.Field(), fieldErr.Value(), fieldErr.Tag(), fieldErr.Param())
+		return cv.newValidationError(fieldErr.Field(), fieldErr.Value(), fieldErr.Tag(), fieldErr.Param())
 	}
 	return nil
+}
+
+func (cv *CustomValidator) newValidationError(field string, value interface{}, tag string, param string) error {
+	switch tag {
+	case "required":
+		return fmt.Errorf("field %s is required", field)
+	default:
+		return fmt.Errorf("field %s is invalid", field)
+	}
 }

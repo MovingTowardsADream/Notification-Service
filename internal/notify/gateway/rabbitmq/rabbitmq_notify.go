@@ -19,6 +19,7 @@ func New(rmq NotifyGatewayRMQ) *NotifyGateway {
 }
 
 func (gw *NotifyGateway) CreateNotifyMailMessageOnRabbitMQ(ctx context.Context, notify entity.MailDate) error {
+
 	err := wrapper(ctx, func() error {
 		return gw.rmq.RemoteCall(ctx, "createNewMailNotify", notify)
 	})
@@ -31,6 +32,7 @@ func (gw *NotifyGateway) CreateNotifyMailMessageOnRabbitMQ(ctx context.Context, 
 }
 
 func (gw *NotifyGateway) CreateNotifyPhoneMessageOnRabbitMQ(ctx context.Context, notify entity.PhoneDate) error {
+
 	err := wrapper(ctx, func() error {
 		return gw.rmq.RemoteCall(ctx, "createNewPhoneNotify", notify)
 	})

@@ -74,8 +74,8 @@ type MailNotify struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Subject string `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
-	Body    string `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty"`
+	Subject string `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty" validate:"required"`
+	Body    string `protobuf:"bytes,2,opt,name=body,proto3" json:"body,omitempty" validate:"required"`
 }
 
 func (x *MailNotify) Reset() {
@@ -129,7 +129,7 @@ type PhoneNotify struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Body string `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty"`
+	Body string `protobuf:"bytes,1,opt,name=body,proto3" json:"body,omitempty" validate:"required"`
 }
 
 func (x *PhoneNotify) Reset() {
@@ -176,8 +176,8 @@ type Channels struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Mail  *MailNotify  `protobuf:"bytes,1,opt,name=mail,proto3" json:"mail,omitempty"`
-	Phone *PhoneNotify `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty"`
+	Mail  *MailNotify  `protobuf:"bytes,1,opt,name=mail,proto3" json:"mail,omitempty" validate:"required"`
+	Phone *PhoneNotify `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone,omitempty" validate:"required"`
 }
 
 func (x *Channels) Reset() {
@@ -231,9 +231,9 @@ type SendMessageRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId     string     `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	NotifyType NotifyType `protobuf:"varint,2,opt,name=notifyType,proto3,enum=notify.NotifyType" json:"notifyType,omitempty"`
-	Channels   *Channels  `protobuf:"bytes,3,opt,name=channels,proto3" json:"channels,omitempty"`
+	UserId     string     `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty" validate:"required"`
+	NotifyType NotifyType `protobuf:"varint,2,opt,name=notifyType,proto3,enum=notify.NotifyType" json:"notifyType,omitempty" validate:"required"`
+	Channels   *Channels  `protobuf:"bytes,3,opt,name=channels,proto3" json:"channels,omitempty" validate:"required"`
 }
 
 func (x *SendMessageRequest) Reset() {
@@ -490,8 +490,8 @@ type UserPreferencesRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId      string       `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty"`
-	Preferences *Preferences `protobuf:"bytes,2,opt,name=users,proto3" json:"users,omitempty"`
+	UserId      string       `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty" validate:"required"`
+	Preferences *Preferences `protobuf:"bytes,2,opt,name=users,proto3" json:"users,omitempty" validate:"required"`
 }
 
 func (x *UserPreferencesRequest) Reset() {

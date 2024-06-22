@@ -4,6 +4,7 @@ import (
 	"Notification_Service/internal/entity"
 	"Notification_Service/internal/notify/grpc/error"
 	"Notification_Service/internal/notify/usecase/usecase_errors"
+	custom_validator "Notification_Service/pkg/validator"
 	notifyv1 "Notification_Service/protos/gen/go/notify"
 	"context"
 	"errors"
@@ -12,16 +13,19 @@ import (
 
 type userRoutes struct {
 	notifyv1.UnimplementedUsersServer
-	editInfo EditInfo
+	editInfo  EditInfo
+	validator *custom_validator.CustomValidator
 }
 
-func Users(gRPC *grpc.Server, editInfo EditInfo) {
-	notifyv1.RegisterUsersServer(gRPC, &userRoutes{editInfo: editInfo})
+func Users(gRPC *grpc.Server, editInfo EditInfo, v *custom_validator.CustomValidator) {
+	notifyv1.RegisterUsersServer(gRPC, &userRoutes{editInfo: editInfo, validator: v})
 }
 
 func (s *userRoutes) UserPreferences(ctx context.Context, req *notifyv1.UserPreferencesRequest) (*notifyv1.UserPreferencesResponse, error) {
 
-	// TODO: Validate request
+	if err := s.validator.Validate(req); err != nil {
+		return nil, grpc_error.ErrInvalidArgument(err)
+	}
 
 	preferences := &entity.UserPreferences{
 		UserId:      req.UserId,
