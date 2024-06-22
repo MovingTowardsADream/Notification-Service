@@ -232,7 +232,7 @@ type SendMessageRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	UserId     string     `protobuf:"bytes,1,opt,name=userId,proto3" json:"userId,omitempty" validate:"required"`
-	NotifyType NotifyType `protobuf:"varint,2,opt,name=notifyType,proto3,enum=notify.NotifyType" json:"notifyType,omitempty" validate:"required"`
+	NotifyType NotifyType `protobuf:"varint,2,opt,name=notifyType,proto3,enum=notify.NotifyType" json:"notifyType,omitempty" validate:"notifyType"`
 	Channels   *Channels  `protobuf:"bytes,3,opt,name=channels,proto3" json:"channels,omitempty" validate:"required"`
 }
 
