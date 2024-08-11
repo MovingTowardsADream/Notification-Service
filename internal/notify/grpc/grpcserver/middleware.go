@@ -2,7 +2,6 @@ package grpcserver
 
 import (
 	"context"
-	"fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,8 +16,13 @@ func (s *Server) loggingInterceptor(ctx context.Context, req interface{}, info *
 	// Processing request
 	resp, err := handler(ctx, req)
 
+	status_request := "OK"
+	if err != nil {
+		status_request = "Failed"
+	}
+
 	// Записываем время окончания обработки запроса
-	s.log.Info("Request end: ", info.FullMethod, "Request: ", fmt.Sprintf("%+v", req), " Duration: ", time.Since(start))
+	s.log.Info("Request end: ", info.FullMethod, "Status: ", status_request, "Duration: ", time.Since(start))
 
 	return resp, err
 }
