@@ -30,3 +30,6 @@ For the application to work correctly, you must specify environment variables in
 `RMQ_URL` - link to the rabbitmq queue.
 
 There is also a config.yaml file in which the remaining data is specified.
+
+## The technology stack used
+`Golang` `gRPC` `RabbitMQ` `PostgreSQL` `Docker`
