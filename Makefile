@@ -1,6 +1,6 @@
 include .env
 
-.PHONY:
+.PHONY: compose-up compose-down build migration-new-db docs_create
 
 compose-up:
 	docker-compose up --build -d postgres rabbitmq

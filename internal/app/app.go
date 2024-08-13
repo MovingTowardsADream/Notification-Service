@@ -56,7 +56,12 @@ func New(l *slog.Logger, cfg *configs.Config) *App {
 
 	gRPCServer := grpcserver2.New(l, notifySend, editInfo, grpcserver2.Port(cfg.Port))
 
-	workerUseCase := usecase.NewNotifyWorker()
+	workerUseCase := usecase.NewNotifyWorker(usecase.SMTP{
+		Domain:   cfg.Domain,
+		Port:     cfg.Notify.Port,
+		UserName: cfg.UserName,
+		Password: cfg.Password,
+	}, cfg.Mail)
 
 	// Init rabbitMQ RPC Server
 	rmqRouter := amqp_rpc.NewRouter(workerUseCase)

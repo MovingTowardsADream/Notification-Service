@@ -15,11 +15,12 @@ const (
 
 type (
 	Config struct {
-		App  `yaml:"app"`
-		GRPC `yaml:"http"`
-		PG   `yaml:"pg"`
-		RMQ  `yaml:"rabbitmq"`
-		Log  `yaml:"logger"`
+		App    `yaml:"app"`
+		GRPC   `yaml:"http"`
+		PG     `yaml:"pg"`
+		RMQ    `yaml:"rabbitmq"`
+		Log    `yaml:"logger"`
+		Notify `yaml:"Notify"`
 	}
 
 	App struct {
@@ -47,6 +48,18 @@ type (
 
 	Log struct {
 		Level string `env:"LOG_LEVEL" env-default:"debug" yaml:"logLevel"`
+	}
+
+	SMTP struct {
+		Domain   string `yaml:"domain" env:"SMTP_DOMAIN"`
+		Port     int    `yaml:"port" env:"SMTP_PORT"`
+		UserName string `yaml:"user_ame" env:"SMTP_USERNAME"`
+		Password string `yaml:"password" env:"SMTP_PASSWORD"`
+	}
+
+	Notify struct {
+		SMTP
+		Mail string `yaml:"mail" env:"MAIL"`
 	}
 )
 

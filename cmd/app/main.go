@@ -4,6 +4,7 @@ import (
 	"Notification_Service/configs"
 	"Notification_Service/internal/app"
 	"Notification_Service/pkg/logger"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,6 +13,8 @@ import (
 func main() {
 	// Init configuration
 	cfg := configs.MustLoad()
+
+	fmt.Println(cfg)
 
 	// Init logger
 	log := logger.SetupLogger(cfg.Log.Level)
