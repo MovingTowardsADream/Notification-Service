@@ -15,7 +15,7 @@ make build
 ## Description of the service
 This service is a microservice that is responsible for sending notifications to various channels. 
 
-The service is implemented using a queue - `RabbitMQ` to implement a `Worker Pool` with a guarantee of sending messages. Messages are sent using a proprietary SMTP server running with `Mailcow`
+The service is implemented using a queue - `RabbitMQ` to implement a `Worker Pool` with a guarantee of sending messages. Messages are sent using a proprietary SMTP server running with `Mailcow`.
 
 ## Environment Variables and Configuration
 For the application to work correctly, you must specify environment variables in the .env file in the root directory. Below are the variables themselves and a brief description:
@@ -23,10 +23,10 @@ For the application to work correctly, you must specify environment variables in
 
 `POSTGRES_USER`, `POSTGRES_DB`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PASSWORD` - parameters for initializing the Postgresql database in docker-compose.
 
+`SMTP_DOMAIN`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL` - required parameters for using the SMTP service
+
 `PG_URL` - link to connect to Postgresql.
 
 `RMQ_URL` - link to the rabbitmq queue.
-
-`SMTP_DOMAIN`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `MAIL` - required parameters for using the SMTP service
 
 There is also a config.yaml file in which the remaining data is specified.
