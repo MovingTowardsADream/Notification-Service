@@ -1,0 +1,134 @@
+<div class="tab-pane fade" id="tab-config-customize" role="tabpanel" aria-labelledby="tab-config-customize">
+  <div class="card mb-4">
+    <div class="card-header d-flex fs-5">
+      <button class="btn d-md-none flex-grow-1 text-start" data-bs-target="#collapse-tab-config-customize" data-bs-toggle="collapse" aria-controls="collapse-tab-config-customize">
+        {{ lang.admin.customize }}
+      </button>
+      <span class="d-none d-md-block">{{ lang.admin.customize }}</span>
+    </div>
+    <div id="collapse-tab-config-customize" class="card-body collapse" data-bs-parent="#admin-content">
+      <legend><i class="bi bi-file-image"></i> {{ lang.admin.change_logo }}</legend><hr />
+      <p class="text-muted">{{ lang.admin.logo_info }}</p>
+      <form class="form-inline" role="form" method="post" enctype="multipart/form-data">
+        <div class="mb-4">
+          <label for="main_logo_input" class="form-label">{{ lang.admin.logo_normal_label }}</label>
+          <input class="form-control" id="main_logo_input" type="file" name="main_logo" accept="image/gif, image/jpeg, image/pjpeg, image/x-png, image/png, image/svg+xml">
+        </div>
+        <div class="mb-4">
+          <label for="main_logo_dark_input" class="form-label">{{ lang.admin.logo_dark_label }}</label>
+          <input class="form-control" id="main_logo_dark_input" type="file" name="main_logo_dark" accept="image/gif, image/jpeg, image/pjpeg, image/x-png, image/png, image/svg+xml">
+        </div>
+
+        <button name="submit_main_logo" type="submit" class="btn btn-sm d-block d-sm-inline btn-secondary"><i class="bi bi-upload"></i> {{ lang.admin.upload }}</button>
+      </form>
+      {% if logo or logo_dark %}
+        <div class="row mt-4">
+          <div class="col-sm-4">
+            {% if logo %}
+              {% include 'admin/customize/logo.twig' %}
+            {% endif %}
+            {% if logo_dark %}
+              {% include 'admin/customize/logo.twig' with {'logo': logo_dark, 'logo_specs': logo_dark_specs, 'dark': 1} %}
+            {% endif %}
+            <hr>
+            <form class="form-inline" role="form" method="post">
+              <p><button name="reset_main_logo" type="submit" class="btn btn-sm d-block d-sm-inline btn-secondary">{{ lang.admin.reset_default }}</button></p>
+            </form>
+          </div>
+        </div>
+      {% endif %}
+      <legend style="padding-top:20px" unselectable="on">{{ lang.admin.ip_check }}</legend><hr />
+      <div id="ip_check">
+        <form class="form" data-id="ip_check" role="form" method="post">
+          <div class="mb-4">
+            <input class="form-check-input" type="checkbox" value="1" name="ip_check_opt_in" id="ip_check_opt_in" {% if ip_check == 1 %}checked{% endif %}>
+            <label class="form-check-label" for="ip_check_opt_in">
+              {{ lang.admin.ip_check_opt_in|raw }}
+            </label>
+          </div>
+          <p><div class="btn-group">
+            <button class="btn btn-sm btn-xs-half d-block d-sm-inline btn-success" data-action="edit_selected" data-item="admin" data-id="ip_check" data-reload="no" data-api-url='edit/ip_check' data-api-attr='{}' href="#"><i class="bi bi-check-lg"></i> {{ lang.admin.save }}</button>
+          </div></p>
+        </form>
+      </div>
+      <legend>{{ lang.admin.app_links }}</legend><hr />
+      <p class="text-muted">{{ lang.admin.merged_vars_hint|raw }}</p>
+      <form class="form-inline" data-id="app_links" role="form" method="post">
+        <table class="table table-condensed" style="white-space: nowrap;" id="app_link_table">
+          <tr>
+            <th>{{ lang.admin.app_name }}</th>
+            <th>{{ lang.admin.link }}</th>
+            <th style="width:100px;">&nbsp;</th>
+          </tr>
+          {% for row in app_links %}
+            {% for key, val in row %}
+              <tr>
+                <td><input class="input-sm input-xs-lg form-control" data-id="app_links" type="text" name="app" required value="{{ key }}"></td>
+                <td><input class="input-sm input-xs-lg form-control" data-id="app_links" type="text" name="href" required value="{{ val }}"></td>
+                <td><a href="#" role="button" class="btn btn-sm btn-xs-lg btn-secondary h-100 w-100" type="button">{{ lang.admin.remove_row }}</a></td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+          {% for app in mailcow_apps %}
+            <tr>
+              <td><input class="input-sm input-xs-lg form-control" value="{{ app.name }}" disabled></td>
+              <td><input class="input-sm input-xs-lg form-control" value="{{ app.link }}" disabled></td>
+              <td><a href="#" role="button" class="btn btn-sm btn-xs-lg btn-secondary h-100 w-100 disabled" type="button">{{ lang.admin.remove_row }}</a></td>
+            </tr>
+          {% endfor %}
+        </table>
+        <p><div class="btn-group">
+          <button class="btn btn-sm btn-xs-half d-block d-sm-inline btn-success" data-action="edit_selected" data-item="admin" data-id="app_links" data-reload="no" data-api-url='edit/app_links' data-api-attr='{}' href="#"><i class="bi bi-check-lg"></i> {{ lang.admin.save }}</button>
+          <button class="btn btn-sm btn-xs-half d-block d-sm-inline btn-secondary" type="button" id="add_app_link_row">{{ lang.admin.add_row }}</button>
+        </div></p>
+      </form>
+      <legend data-bs-target="#ui_texts" style="padding-top:20px" unselectable="on">{{ lang.admin.ui_texts }}</legend><hr />
+      <div id="ui_texts">
+        <form class="form" data-id="uitexts" role="form" method="post">
+          <div class="mb-2">
+            <label for="uitests_title_name">{{ lang.admin.title_name }}:</label>
+            <input type="text" class="form-control" id="uitests_title_name" name="title_name" placeholder="mailcow UI" value="{{ ui_texts.title_name|raw }}">
+          </div>
+          <div class="mb-2">
+            <label for="uitests_main_name">{{ lang.admin.main_name }}:</label>
+            <input type="text" class="form-control" id="uitests_main_name" name="main_name" placeholder="mailcow UI" value="{{ ui_texts.main_name|raw }}">
+          </div>
+          <div class="mb-2">
+            <label for="uitests_apps_name">{{ lang.admin.apps_name }}:</label>
+            <input type="text" class="form-control" id="uitests_apps_name" name="apps_name" placeholder="{{ lang.header.apps }}" value="{{ ui_texts.apps_name|raw }}">
+          </div>
+          <div class="mb-4">
+            <label for="help_text">{{ lang.admin.help_text }}:</label>
+            <textarea class="form-control" id="help_text" name="help_text" rows="7">{{ ui_texts.help_text|raw }}</textarea>
+          </div>
+          <hr>
+          <div>
+            <p class="text-muted">{{ lang.admin.ui_header_announcement_help }}</p>
+            <label for="ui_announcement_type">{{ lang.admin.ui_header_announcement }}:</label>
+            <div class="row">
+              <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+                <p><select multiple data-width="100%" id="ui_announcement_type" name="ui_announcement_type" class="selectpicker show-tick" data-max-options="1" title="{{ lang.admin.ui_header_announcement_select }}">
+                    <option {% if ui_texts.ui_announcement_type == 'info' %}selected{% endif %} value="info">{{ lang.admin.ui_header_announcement_type_info }}</option>
+                    <option {% if ui_texts.ui_announcement_type == 'warning' %}selected{% endif %} value="warning">{{ lang.admin.ui_header_announcement_type_warning }}</option>
+                    <option {% if ui_texts.ui_announcement_type == 'danger' %}selected{% endif %} value="danger">{{ lang.admin.ui_header_announcement_type_danger }}</option>
+                  </select></p>
+              </div>
+            </div>
+            <p><textarea class="form-control" id="ui_announcement_text" name="ui_announcement_text" rows="7">{{ ui_texts.ui_announcement_text }}</textarea></p>
+            <div class="form-check">
+              <label>
+                <input type="checkbox" name="ui_announcement_active" class="form-check-input" {% if ui_texts.ui_announcement_active == 1 %}checked{% endif %}> {{ lang.admin.ui_header_announcement_active }}
+              </label>
+            </div>
+          </div>
+          <hr>
+          <div class="mb-4">
+            <label for="ui_footer">{{ lang.admin.ui_footer }}:</label>
+            <textarea class="form-control" id="ui_footer" name="ui_footer" rows="7">{{ ui_texts.ui_footer }}</textarea>
+          </div>
+          <button class="btn btn-sm d-block d-sm-inline btn-success" data-action="edit_selected" data-item="ui" data-id="uitexts" data-api-url='edit/ui_texts' data-api-attr='{}' href="#"><i class="bi bi-check-lg"></i> {{ lang.admin.save }}</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

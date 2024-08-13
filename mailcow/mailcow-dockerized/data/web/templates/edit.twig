@@ -1,0 +1,33 @@
+{% extends 'base.twig' %}
+
+{% block content %}
+<a href="{{ return_to }}">&#8592; {{ lang.edit.previous }}</a>
+<div class="row my-4">
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header fs-5">
+        <span>{{ lang.edit.title }}</span>
+      </div>
+      <div class="card-body">
+        {% block inner_content %}
+          {% if access_denied %}
+          <div class="alert alert-danger" role="alert">{{ lang.danger.access_denied }}</div>
+          {% else %}
+          <div class="alert alert-info" role="alert">{{ lang.info.no_action }}</div>
+          {% endif %}
+        {% endblock %}
+      </div>
+    </div>
+  </div>
+</div>
+<a href="{{ return_to }}">&#8592; {{ lang.edit.previous }}</a>
+
+<script type='text/javascript'>
+  var lang_user = {{ lang_user|raw }};
+  var lang_admin = {{ lang_admin|raw }};
+  var lang_datatables = {{ lang_datatables|raw }};
+  var csrf_token = '{{ csrf_token }}';
+  var pagination_size = Math.trunc('{{ pagination_size }}');
+  var table_for_domain = '{{ domain }}';
+</script>
+{% endblock %}

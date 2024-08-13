@@ -1,0 +1,28 @@
+<div class="tab-pane fade" id="tab-config-oauth2" role="tabpanel" aria-labelledby="tab-config-oauth2">
+  <div class="card mb-4">
+    <div class="card-header d-flex fs-5">
+      <button class="btn d-md-none flex-grow-1 text-start" data-bs-target="#collapse-tab-config-oauth2" data-bs-toggle="collapse" aria-controls="collapse-tab-config-oauth2">
+        {{ lang.admin.oauth2_apps }}
+      </button>
+      <span class="d-none d-md-block">{{ lang.admin.oauth2_apps }}</span>
+    </div>
+    <div id="collapse-tab-config-oauth2" class="card-body collapse" data-bs-parent="#admin-content">
+      <p>{{ lang.admin.oauth2_info|raw }}</p>
+      <table id="oauth2clientstable" class="table table-striped dt-responsive w-100"></table>
+      <div class="mass-actions-admin">
+        <div class="btn-group">
+          <a class="btn btn-sm btn-xs-half d-block d-sm-inline btn-secondary" id="toggle_multi_select_all" data-id="oauth2_clients" href="#"><i class="bi bi-check-all"></i> {{ lang.mailbox.toggle_all }}</a>
+          <a class="btn btn-sm btn-xs-half d-block d-sm-inline btn-secondary dropdown-toggle" data-bs-toggle="dropdown" href="#">{{ lang.mailbox.quick_actions }}</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" data-action="delete_selected" data-id="oauth2_clients" data-api-url='delete/oauth2-client' href="#">{{ lang.mailbox.remove }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" data-action="edit_selected" data-id="oauth2_clients" data-api-url='edit/oauth2-client' data-api-attr='{"revoke_tokens":"1"}' href="#">{{ lang.admin.oauth2_revoke_tokens }}</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" data-action="edit_selected" data-id="oauth2_clients" data-api-url='edit/oauth2-client' data-api-attr='{"renew_secret":"1"}' href="#">{{ lang.admin.oauth2_renew_secret }}</a></li>
+          </ul>
+          <a class="btn btn-sm d-block d-sm-inline btn-success" data-id="add_oauth2_client" data-bs-toggle="modal" data-bs-target="#addOAuth2ClientModal" href="#"><i class="bi bi-plus-lg"></i> {{ lang.admin.oauth2_add_client }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

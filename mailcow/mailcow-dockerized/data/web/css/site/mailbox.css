@@ -1,0 +1,71 @@
+.pagination a {
+  text-decoration: none !important;
+}
+.panel.panel-default {
+  overflow: visible !important;
+}
+.table-responsive {
+  overflow: inherit !important;
+}
+.table-responsive {
+  overflow-x: scroll !important;
+}
+.btn-group {
+  width: max-content;
+}
+.footer-add-item {
+  display:block;
+  text-align: center;
+  font-style: italic;
+  padding: 10px;
+  background: #F5F5F5;
+}
+@media (min-width: 992px) {
+  .container {
+      width: 100%;
+  }
+}
+@media (min-width: 1920px) {
+  .container {
+      width: 80%;
+  }
+}
+.mass-actions-mailbox {
+  user-select: none;
+}
+.inputMissingAttr {
+  border-color: #FF4136;
+}
+.dns-found {
+  max-width: 300px;
+  word-break: break-all;
+}
+.dns-recommended {
+  max-width: 150px;
+  word-break: break-all;
+}
+.table-lines {
+  vertical-align: inherit;
+}
+#logText {
+  font-family:Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+  font-size:smaller;
+}
+table tbody tr {
+  cursor: pointer;
+}
+table tbody tr td input[type="checkbox"] {
+  cursor: pointer;
+}
+.label-last-login .bi {
+  font-size: 8pt !important;
+}
+.label-last-login {
+  line-height: 2.2;
+  color: #4a4a4a!important;
+  padding: .2em .4em .3em !important;
+  background-color: #ececec!important;
+}
+.badge.bg-info .bi {
+  font-size: inherit;
+}

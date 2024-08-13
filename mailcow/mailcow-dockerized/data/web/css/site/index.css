@@ -1,0 +1,8 @@
+@media (max-width: 500px) {
+  #top {
+    padding-top: 15px !important;
+  }
+}
+.ui-announcement-alert {
+  margin: 10px 0px 10px 0px;
+}
