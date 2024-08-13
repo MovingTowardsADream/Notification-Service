@@ -33,7 +33,7 @@ if docker compose > /dev/null 2>&1; then
       sleep 2
       echo -e "\e[33mNotice: You´ll have to update this Compose Version via your Package Manager manually!\e[0m"
     else
-      echo -e "\e[31mCannot find Docker Compose with a Version Higher than 2.X.X.\e[0m" 
+      echo -e "\e[31mCannot find Docker Compose with a Version Higher than 2.X.X.\e[0m"
       echo -e "\e[31mPlease update/install it manually regarding to this doc site: https://docs.mailcow.email/install/\e[0m"
       exit 1
     fi
@@ -46,14 +46,14 @@ elif docker-compose > /dev/null 2>&1; then
       sleep 2
       echo -e "\e[33mNotice: For an automatic update of docker-compose please use the update_compose.sh scripts located at the helper-scripts folder.\e[0m"
     else
-      echo -e "\e[31mCannot find Docker Compose with a Version Higher than 2.X.X.\e[0m" 
+      echo -e "\e[31mCannot find Docker Compose with a Version Higher than 2.X.X.\e[0m"
       echo -e "\e[31mPlease update/install manually regarding to this doc site: https://docs.mailcow.email/install/\e[0m"
       exit 1
     fi
   fi
 
 else
-  echo -e "\e[31mCannot find Docker Compose.\e[0m" 
+  echo -e "\e[31mCannot find Docker Compose.\e[0m"
   echo -e "\e[31mPlease install it regarding to this doc site: https://docs.mailcow.email/install/\e[0m"
   exit 1
 fi
@@ -215,7 +215,7 @@ else
   echo -e "\033[31mCould not determine branch input..."
   echo -e "\033[31mExiting."
   exit 1
-fi  
+fi
 
 if [ ! -z "${MAILCOW_BRANCH}" ]; then
   git_branch=${MAILCOW_BRANCH}
@@ -496,7 +496,7 @@ WEBAUTHN_ONLY_TRUSTED_VENDORS=n
 
 # Spamhaus Data Query Service Key
 # Optional: Leave empty for none
-# Enter your key here if you are using a blocked ASN (OVH, AWS, Cloudflare e.g) for the unregistered Spamhaus Blocklist. 
+# Enter your key here if you are using a blocked ASN (OVH, AWS, Cloudflare e.g) for the unregistered Spamhaus Blocklist.
 # If empty, it will completely disable Spamhaus blocklists if it detects that you are running on a server using a blocked AS.
 # Otherwise it will work normally.
 SPAMHAUS_DQS_KEY=
@@ -531,15 +531,6 @@ case ${git_branch} in
     mailcow_last_git_version=""
     ;;
 esac
-# if [ ${git_branch} == "master" ]; then
-#   mailcow_git_version=$(git describe --tags `git rev-list --tags --max-count=1`)
-# elif [ ${git_branch} == "nightly" ]; then
-#   mailcow_git_version=$(git rev-parse --short $(git rev-parse @{upstream}))
-#   mailcow_last_git_version=""
-# else
-#   mailcow_git_version=$(git rev-parse --short HEAD)
-#   mailcow_last_git_version=""
-# fi
 
 if [[ $SKIP_BRANCH != "y" ]]; then
 mailcow_git_commit=$(git rev-parse origin/${git_branch})
