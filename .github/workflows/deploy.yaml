@@ -1,4 +1,4 @@
-name: Deploy Notifications Service
+name: Deploy Notification Service
 
 on:
   workflow_dispatch:
@@ -13,7 +13,7 @@ jobs:
     env:
       HOST: ${{ secrets.HOST }}
       DEPLOY_DIRECTORY: /root/apps/notify-service
-      CONFIG_PATH: /root/apps/notify-service/configs/config.yaml
+      CONFIG_PATH: /root/apps/notify-service/configs/prod.yaml
       ENV_PATH: /root/apps/notify-service/.env
 
     steps:
@@ -32,7 +32,7 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.22
-      - name: Build app
+      - name: Build application
         run: |
           go mod download
           go build -o notify-service ./cmd/app

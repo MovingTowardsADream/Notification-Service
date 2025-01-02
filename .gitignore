@@ -1,5 +1,2 @@
+.idea
 .env
-./mailcow/mailcow-dockerized/.env
-./mailcow/mailcow-dockerized/mailcow.conf
-./mailcow/mailcow-dockerized/data
-./mailcow/mailcow-dockerized/helper-scripts

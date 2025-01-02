@@ -1,0 +1,33 @@
+app:
+  name: "notification-service"
+  version: "v1.0.0"
+  countWorkers: 24
+  timeout: 5s
+
+grpc:
+  port: ":8080"
+  timeout: 5s
+
+storage:
+  poolMax: 2
+  connAttempts: 10
+  connTimeout: 1s
+
+messaging:
+  server:
+    rpcExchange: "rpc_server"
+    goroutinesCount: 11
+    waitTime: 2s
+    attempts: 10
+    timeout: 2s
+  client:
+    rpcExchange: "rpc_client"
+    waitTime: 2s
+    attempts: 10
+    timeout: 2s
+
+smtp:
+  port: 443
+
+logger:
+  logLevel: "prod"

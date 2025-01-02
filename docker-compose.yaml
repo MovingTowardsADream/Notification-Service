@@ -21,7 +21,7 @@ services:
 
   app:
     build: .
-    container_name: app
+    container_name: notify
     image: app
     env_file:
       - .env
@@ -30,5 +30,6 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+
 volumes:
   pg-data:
