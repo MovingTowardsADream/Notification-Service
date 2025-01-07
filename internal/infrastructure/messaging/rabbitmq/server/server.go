@@ -3,6 +3,7 @@ package rmq_server
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"runtime"
 	"sync"
 	"time"
@@ -80,21 +81,28 @@ func (s *Server) consumer() {
 		select {
 		case <-s.stop:
 			return
-		case d, opened := <-s.conn.Delivery:
-			if !opened {
-				s.reconnect()
+		default:
+			for topic, deliveryChan := range s.conn.Deliveries {
+				select {
+				case d, opened := <-deliveryChan:
+					if !opened {
+						log.Printf("Channel for topic %s closed. Reconnecting...", topic)
+						s.reconnect()
+						return
+					}
 
-				return
+					_ = d.Ack(false)
+
+					s.serveCall(topic, &d)
+				default:
+					continue
+				}
 			}
-
-			_ = d.Ack(false)
-
-			s.serveCall(&d)
 		}
 	}
 }
 
-func (s *Server) republish(corrID, handler string, request any) error {
+func (s *Server) republish(corrID, handler, topic string, request any) error {
 	var (
 		requestBody []byte
 		err         error
@@ -107,7 +115,7 @@ func (s *Server) republish(corrID, handler string, request any) error {
 		}
 	}
 
-	err = s.conn.Channel.Publish(s.serverExchange, "", false, false,
+	err = s.conn.Channel.Publish(topic, "", false, false,
 		amqp.Publishing{
 			ContentType:   "application/json",
 			CorrelationId: corrID,
@@ -122,28 +130,27 @@ func (s *Server) republish(corrID, handler string, request any) error {
 	return nil
 }
 
-func (s *Server) serveCall(d *amqp.Delivery) {
-	callHandler, ok := s.router[d.Type]
+func (s *Server) serveCall(topic string, d *amqp.Delivery) {
+	callHandler, ok := s.router[topic]
 	if !ok {
+		s.logger.Error("No handlers found for topic: %s", topic)
 		return
 	}
 
 	response, err := callHandler(d)
-
 	if err != nil {
 		count := s.getMistake(d.CorrelationId)
-
 		if count >= 3 {
 			s.deleteMistake(d.CorrelationId)
+			s.logger.Error("Max retry limit reached for message: %s", d.CorrelationId)
 			return
 		}
 
 		s.addMistake(d.CorrelationId)
 
-		err = s.republish(d.CorrelationId, d.Type, response)
-
+		err = s.republish(d.CorrelationId, d.Type, topic, response)
 		if err != nil {
-			s.logger.Error("rmq_server - Server - serveCall - s.Republish", s.logger.Err(err))
+			s.logger.Error("rmq_server - Server - serveCall - s.republish", s.logger.Err(err))
 			return
 		}
 

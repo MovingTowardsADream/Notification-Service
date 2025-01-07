@@ -17,7 +17,7 @@ type Params struct {
 type Connection struct {
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
-	Delivery   <-chan amqp.Delivery
+	Deliveries map[string]<-chan amqp.Delivery
 
 	ConsumerExchange string
 	Params
@@ -32,11 +32,11 @@ func NewConnection(consumerExchange string, params Params) *Connection {
 	return conn
 }
 
-func (c *Connection) AttemptConnect(connector func() error) error {
+func (c *Connection) AttemptConnect(connector func([]string) error) error {
 	var err error
 
 	for i := c.Attempts; i > 0; i-- {
-		if err = connector(); err == nil {
+		if err = connector([]string{"phone", "mail"}); err == nil {
 			break
 		}
 
@@ -67,7 +67,7 @@ func (c *Connection) connect() error {
 	return nil
 }
 
-func (c *Connection) ConnectWriter() error {
+func (c *Connection) ConnectWriter(topics []string) error {
 	var err error
 
 	err = c.connect()
@@ -75,23 +75,25 @@ func (c *Connection) ConnectWriter() error {
 		return err
 	}
 
-	err = c.Channel.ExchangeDeclare(
-		c.ConsumerExchange,
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("c.Channel.ExchangeDeclare: %w", err)
+	for _, topic := range topics {
+		err = c.Channel.ExchangeDeclare(
+			topic,
+			"fanout",
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("c.Channel.ExchangeDeclare for topic %s: %w", topic, err)
+		}
 	}
 
 	return nil
 }
 
-func (c *Connection) ConnectReader() error {
+func (c *Connection) ConnectReader(topics []string) error {
 	var err error
 
 	err = c.connect()
@@ -99,54 +101,61 @@ func (c *Connection) ConnectReader() error {
 		return err
 	}
 
-	err = c.Channel.ExchangeDeclare(
-		c.ConsumerExchange,
-		"fanout",
-		true,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("c.Channel.ExchangeDeclare: %w", err)
+	deliveries := make(map[string]<-chan amqp.Delivery)
+
+	for _, topic := range topics {
+		err = c.Channel.ExchangeDeclare(
+			topic,
+			"fanout",
+			true,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("c.Channel.ExchangeDeclare for topic %s: %w", topic, err)
+		}
+
+		queue, err := c.Channel.QueueDeclare(
+			"",
+			true,
+			false,
+			true,
+			false,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("c.Channel.QueueDeclare for topic %s: %w", topic, err)
+		}
+
+		err = c.Channel.QueueBind(
+			queue.Name,
+			"",
+			topic,
+			false,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("c.Channel.QueueBind for topic %s: %w", topic, err)
+		}
+
+		delivery, err := c.Channel.Consume(
+			queue.Name,
+			"",
+			false,
+			false,
+			false,
+			false,
+			nil,
+		)
+		if err != nil {
+			return fmt.Errorf("c.Channel.Consume for topic %s: %w", topic, err)
+		}
+
+		deliveries[topic] = delivery
 	}
 
-	queue, err := c.Channel.QueueDeclare(
-		"",
-		true,
-		false,
-		true,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("c.Channel.QueueDeclare: %w", err)
-	}
-
-	err = c.Channel.QueueBind(
-		queue.Name,
-		"",
-		c.ConsumerExchange,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("c.Channel.QueueBind: %w", err)
-	}
-
-	c.Delivery, err = c.Channel.Consume(
-		queue.Name,
-		"",
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		return fmt.Errorf("c.Channel.Consume: %w", err)
-	}
-
+	c.Deliveries = deliveries
 	return nil
 }

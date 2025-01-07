@@ -54,7 +54,7 @@ func New(url, serverExchange, clientExchange string, opts ...Option) (*Client, e
 	return c, nil
 }
 
-func (c *Client) publish(corrID, handler string, request any) error {
+func (c *Client) publish(corrID, handler, topic string, request any) error {
 	var (
 		requestBody []byte
 		err         error
@@ -67,7 +67,7 @@ func (c *Client) publish(corrID, handler string, request any) error {
 		}
 	}
 
-	err = c.conn.Channel.Publish(c.serverExchange, "", false, false,
+	err = c.conn.Channel.Publish(topic, "", false, false,
 		amqp.Publishing{
 			ContentType:   "application/json",
 			CorrelationId: corrID,
@@ -83,7 +83,7 @@ func (c *Client) publish(corrID, handler string, request any) error {
 	return nil
 }
 
-func (c *Client) RemoteCall(ctx context.Context, handler string, request any) error {
+func (c *Client) RemoteCall(ctx context.Context, handler, topic string, request any) error {
 	select {
 	case <-c.stop:
 		time.Sleep(c.timeout)
@@ -96,7 +96,7 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, request any) er
 	}
 
 	corrID := uuid.New().String()
-	err := c.publish(corrID, handler, request)
+	err := c.publish(corrID, handler, topic, request)
 	if err != nil {
 		return fmt.Errorf("rmq_rpc client - Client - RemoteCall - c.publish: %w", err)
 	}

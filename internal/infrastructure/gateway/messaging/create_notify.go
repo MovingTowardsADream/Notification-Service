@@ -8,7 +8,7 @@ import (
 )
 
 type NotifyGatewayMessaging interface {
-	RemoteCall(ctx context.Context, handler string, request any) error
+	RemoteCall(ctx context.Context, handler, topic string, request any) error
 }
 
 type NotifyGateway struct {
@@ -21,7 +21,7 @@ func NewNotifyGateway(mes NotifyGatewayMessaging) *NotifyGateway {
 
 func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailDate) error {
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "createNewMailNotify", notify)
+		return gw.mes.RemoteCall(ctx, "createNewMailNotify", "mail", notify)
 	})
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailD
 
 func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, notify *dto.PhoneDate) error {
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "createNewPhoneNotify", notify)
+		return gw.mes.RemoteCall(ctx, "createNewPhoneNotify", "phone", notify)
 	})
 
 	if err != nil {

@@ -20,8 +20,8 @@ type notifyWorkerRoutes struct {
 func newNotifyWorkerRoutes(routes map[string]rmq_server.CallHandler, w smtp.NotifyWorker) {
 	r := &notifyWorkerRoutes{w}
 	{
-		routes["createNewMailNotify"] = r.createNewMailNotify()
-		routes["createNewPhoneNotify"] = r.createNewPhoneNotify()
+		routes["mail"] = r.createNewMailNotify()
+		routes["phone"] = r.createNewPhoneNotify()
 	}
 }
 
