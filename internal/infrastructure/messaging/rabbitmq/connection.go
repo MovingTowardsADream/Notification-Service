@@ -15,27 +15,28 @@ type Params struct {
 }
 
 type Connection struct {
-	ConsumerExchange string
-	Params
-
 	Connection *amqp.Connection
 	Channel    *amqp.Channel
-	Delivery   <-chan amqp.Delivery // Канал для получения доставленных сообщений
+	Delivery   <-chan amqp.Delivery
+
+	ConsumerExchange string
+	Params
 }
 
-func NewConnection(consumerExchange string, cfg Params) *Connection {
+func NewConnection(consumerExchange string, params Params) *Connection {
 	conn := &Connection{
 		ConsumerExchange: consumerExchange,
-		Params:           cfg,
+		Params:           params,
 	}
 
 	return conn
 }
 
-func (c *Connection) AttemptConnect() error {
+func (c *Connection) AttemptConnect(connector func() error) error {
 	var err error
+
 	for i := c.Attempts; i > 0; i-- {
-		if err = c.connect(); err == nil {
+		if err = connector(); err == nil {
 			break
 		}
 
@@ -63,6 +64,17 @@ func (c *Connection) connect() error {
 		return fmt.Errorf("c.Connection.Channel: %w", err)
 	}
 
+	return nil
+}
+
+func (c *Connection) ConnectWriter() error {
+	var err error
+
+	err = c.connect()
+	if err != nil {
+		return err
+	}
+
 	err = c.Channel.ExchangeDeclare(
 		c.ConsumerExchange,
 		"fanout",
@@ -73,7 +85,31 @@ func (c *Connection) connect() error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf("c.Connection.Channel: %w", err)
+		return fmt.Errorf("c.Channel.ExchangeDeclare: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Connection) ConnectReader() error {
+	var err error
+
+	err = c.connect()
+	if err != nil {
+		return err
+	}
+
+	err = c.Channel.ExchangeDeclare(
+		c.ConsumerExchange,
+		"fanout",
+		true,
+		false,
+		false,
+		false,
+		nil,
+	)
+	if err != nil {
+		return fmt.Errorf("c.Channel.ExchangeDeclare: %w", err)
 	}
 
 	queue, err := c.Channel.QueueDeclare(

@@ -19,12 +19,12 @@ const (
 )
 
 type Client struct {
-	conn           *rmq_rpc.Connection
+	conn *rmq_rpc.Connection
+
 	serverExchange string
 	error          chan error
 	stop           chan struct{}
-
-	timeout time.Duration
+	timeout        time.Duration
 }
 
 func New(url, serverExchange, clientExchange string, opts ...Option) (*Client, error) {
@@ -46,7 +46,7 @@ func New(url, serverExchange, clientExchange string, opts ...Option) (*Client, e
 		opt(c)
 	}
 
-	err := c.conn.AttemptConnect()
+	err := c.conn.AttemptConnect(c.conn.ConnectWriter)
 	if err != nil {
 		return nil, fmt.Errorf("rmq_rpc client - NewClient - c.conn.AttemptConnect: %w", err)
 	}
@@ -75,6 +75,7 @@ func (c *Client) publish(corrID, handler string, request any) error {
 			Type:          handler,
 			Body:          requestBody,
 		})
+
 	if err != nil {
 		return fmt.Errorf("c.Channel.Publish: %w", err)
 	}

@@ -61,7 +61,7 @@ func New(url, serverExchange string, router map[string]CallHandler, l *logger.Lo
 		opt(s)
 	}
 
-	err := s.conn.AttemptConnect()
+	err := s.conn.AttemptConnect(s.conn.ConnectReader)
 	if err != nil {
 		return nil, fmt.Errorf("rmq_rpc server - NewServer - s.conn.AttemptConnect: %w", err)
 	}
@@ -179,7 +179,7 @@ func (s *Server) deleteMistake(corrID string) {
 func (s *Server) reconnect() {
 	close(s.stop)
 
-	err := s.conn.AttemptConnect()
+	err := s.conn.AttemptConnect(s.conn.ConnectReader)
 	if err != nil {
 		s.error <- err
 		close(s.error)
