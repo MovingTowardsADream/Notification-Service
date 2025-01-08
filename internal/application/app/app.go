@@ -40,10 +40,13 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		panic("storage ping error: " + err.Error())
 	}
 
+	var topics = []string{"phone", "mail"}
+
 	mesClient, err := rmq_client.New(
 		cfg.Messaging.URL,
 		cfg.Messaging.Server.RPCExchange,
 		cfg.Messaging.Client.RPCExchange,
+		topics,
 		rmq_client.ConnAttempts(cfg.Messaging.Client.Attempts),
 		rmq_client.ConnWaitTime(cfg.Messaging.Client.WaitTime),
 		rmq_client.Timeout(cfg.Messaging.Client.Timeout),
@@ -65,11 +68,10 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 	)
 
 	SMTPClient := smtp.New(
-		&smtp.Params{
+		smtp.Params{
 			Domain:   cfg.Domain,
 			Username: cfg.UserName,
 			Password: cfg.Password,
-			Mail:     cfg.Notify.Mail,
 		},
 		smtp.Port(cfg.SMTP.Port),
 	)
@@ -81,6 +83,7 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 	rmqServer, err := rmq_server.New(
 		cfg.Messaging.URL,
 		cfg.Messaging.Server.RPCExchange,
+		topics,
 		rmqRouter,
 		l,
 		rmq_server.GoroutinesCount(cfg.Messaging.Server.GoroutinesCount),

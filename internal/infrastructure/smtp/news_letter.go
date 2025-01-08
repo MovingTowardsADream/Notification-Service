@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"gopkg.in/gomail.v2"
+
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -21,19 +23,16 @@ func NewNotifyWorker(smtp *SMTP) *NotifyWorkerUseCase {
 }
 
 func (uc *NotifyWorkerUseCase) CreateNewMailNotify(ctx context.Context, notify dto.MailDate) error {
-	//m := gomail.NewMessage()
-	//m.SetHeader("From", uc.SMTP.Mail)
-	//m.SetHeader("To", notify.Mail)
-	//m.SetHeader("Subject", notify.Subject)
-	//m.SetBody("text/html", notify.Body)
-	//
-	//if err := uc.SMTP.Dialer.DialAndSend(m); err != nil {
-	//	return err
-	//}
+	m := gomail.NewMessage()
 
-	// TODO Send message on email
+	m.SetHeader("From", uc.SMTP.Params.Username)
+	m.SetHeader("To", notify.Mail)
+	m.SetHeader("Subject", notify.Subject)
+	m.SetBody("text/html", notify.Body)
 
-	fmt.Println("SEND MESSAGE ON MAIL: ", notify)
+	if err := uc.SMTP.Dialer.DialAndSend(m); err != nil {
+		return fmt.Errorf("smtp - NotifyWorkerUseCase - CreateNewMailNotify - uc.SMTP.Dialer.DialAndSend: %w", err)
+	}
 
 	return nil
 }

@@ -22,12 +22,13 @@ type Client struct {
 	conn *rmq_rpc.Connection
 
 	serverExchange string
-	error          chan error
-	stop           chan struct{}
 	timeout        time.Duration
+
+	error chan error
+	stop  chan struct{}
 }
 
-func New(url, serverExchange, clientExchange string, opts ...Option) (*Client, error) {
+func New(url, serverExchange, clientExchange string, topics []string, opts ...Option) (*Client, error) {
 	cfg := rmq_rpc.Params{
 		URL:      url,
 		WaitTime: _defaultWaitTime,
@@ -35,7 +36,7 @@ func New(url, serverExchange, clientExchange string, opts ...Option) (*Client, e
 	}
 
 	c := &Client{
-		conn:           rmq_rpc.NewConnection(clientExchange, cfg),
+		conn:           rmq_rpc.NewConnection(clientExchange, topics, cfg),
 		serverExchange: serverExchange,
 		error:          make(chan error),
 		stop:           make(chan struct{}),

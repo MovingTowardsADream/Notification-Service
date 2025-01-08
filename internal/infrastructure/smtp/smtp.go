@@ -11,20 +11,20 @@ const (
 )
 
 type Params struct {
-	Domain, Username, Password, Mail string
+	Domain, Username, Password string
 }
 
 type SMTP struct {
 	Dialer *gomail.Dialer
 
-	Mail string
-	Port int
+	Params Params
+	Port   int
 }
 
-func New(params *Params, opts ...Option) *SMTP {
+func New(params Params, opts ...Option) *SMTP {
 	smtp := &SMTP{
-		Port: defaultSMTPPort,
-		Mail: params.Mail,
+		Port:   defaultSMTPPort,
+		Params: params,
 	}
 
 	for _, opts := range opts {

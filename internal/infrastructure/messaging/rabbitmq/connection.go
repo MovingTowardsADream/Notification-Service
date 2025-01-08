@@ -20,23 +20,23 @@ type Connection struct {
 	Deliveries map[string]<-chan amqp.Delivery
 
 	ConsumerExchange string
+	Topics           []string
 	Params
 }
 
-func NewConnection(consumerExchange string, params Params) *Connection {
-	conn := &Connection{
+func NewConnection(consumerExchange string, topics []string, params Params) *Connection {
+	return &Connection{
 		ConsumerExchange: consumerExchange,
+		Topics:           topics,
 		Params:           params,
 	}
-
-	return conn
 }
 
-func (c *Connection) AttemptConnect(connector func([]string) error) error {
+func (c *Connection) AttemptConnect(connector func() error) error {
 	var err error
 
 	for i := c.Attempts; i > 0; i-- {
-		if err = connector([]string{"phone", "mail"}); err == nil {
+		if err = connector(); err == nil {
 			break
 		}
 
@@ -67,7 +67,7 @@ func (c *Connection) connect() error {
 	return nil
 }
 
-func (c *Connection) ConnectWriter(topics []string) error {
+func (c *Connection) ConnectWriter() error {
 	var err error
 
 	err = c.connect()
@@ -75,7 +75,7 @@ func (c *Connection) ConnectWriter(topics []string) error {
 		return err
 	}
 
-	for _, topic := range topics {
+	for _, topic := range c.Topics {
 		err = c.Channel.ExchangeDeclare(
 			topic,
 			"fanout",
@@ -93,7 +93,7 @@ func (c *Connection) ConnectWriter(topics []string) error {
 	return nil
 }
 
-func (c *Connection) ConnectReader(topics []string) error {
+func (c *Connection) ConnectReader() error {
 	var err error
 
 	err = c.connect()
@@ -103,7 +103,7 @@ func (c *Connection) ConnectReader(topics []string) error {
 
 	deliveries := make(map[string]<-chan amqp.Delivery)
 
-	for _, topic := range topics {
+	for _, topic := range c.Topics {
 		err = c.Channel.ExchangeDeclare(
 			topic,
 			"fanout",

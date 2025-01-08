@@ -3,7 +3,6 @@ package rmq_server
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"runtime"
 	"sync"
 	"time"
@@ -40,7 +39,7 @@ type Server struct {
 	mistakes map[string]int
 }
 
-func New(url, serverExchange string, router map[string]CallHandler, l *logger.Logger, opts ...Option) (*Server, error) {
+func New(url, serverExchange string, topics []string, router map[string]CallHandler, l *logger.Logger, opts ...Option) (*Server, error) {
 	cfg := rmq_rpc.Params{
 		URL:      url,
 		WaitTime: _defaultWaitTime,
@@ -49,13 +48,14 @@ func New(url, serverExchange string, router map[string]CallHandler, l *logger.Lo
 
 	s := &Server{
 		serverExchange:  serverExchange,
-		conn:            rmq_rpc.NewConnection(serverExchange, cfg),
+		conn:            rmq_rpc.NewConnection(serverExchange, topics, cfg),
 		error:           make(chan error),
 		stop:            make(chan struct{}),
 		router:          router,
 		timeout:         _defaultTimeout,
 		goroutinesCount: _defaultGoroutinesCount,
 		logger:          l,
+		mistakes:        make(map[string]int),
 	}
 
 	for _, opt := range opts {
@@ -76,28 +76,32 @@ func (s *Server) MustRun() {
 	}
 }
 
-func (s *Server) consumer() {
+func (s *Server) topicConsume(topic string, deliveryChan <-chan amqp.Delivery) {
 	for {
 		select {
-		case <-s.stop:
-			return
-		default:
-			for topic, deliveryChan := range s.conn.Deliveries {
-				select {
-				case d, opened := <-deliveryChan:
-					if !opened {
-						log.Printf("Channel for topic %s closed. Reconnecting...", topic)
-						s.reconnect()
-						return
-					}
-
-					_ = d.Ack(false)
-
-					s.serveCall(topic, &d)
-				default:
-					continue
-				}
+		case d, opened := <-deliveryChan:
+			if !opened {
+				s.logger.Warn("Channel for topic %s closed. Reconnecting...", topic)
+				s.reconnect()
+				return
 			}
+
+			_ = d.Ack(false)
+
+			s.serveCall(topic, &d)
+		default:
+			continue
+		}
+	}
+}
+
+func (s *Server) consumer() {
+	select {
+	case <-s.stop:
+		return
+	default:
+		for topic, deliveryChan := range s.conn.Deliveries {
+			go s.topicConsume(topic, deliveryChan)
 		}
 	}
 }
@@ -136,7 +140,6 @@ func (s *Server) serveCall(topic string, d *amqp.Delivery) {
 		s.logger.Error("No handlers found for topic: %s", topic)
 		return
 	}
-
 	response, err := callHandler(d)
 	if err != nil {
 		count := s.getMistake(d.CorrelationId)
@@ -145,7 +148,6 @@ func (s *Server) serveCall(topic string, d *amqp.Delivery) {
 			s.logger.Error("Max retry limit reached for message: %s", d.CorrelationId)
 			return
 		}
-
 		s.addMistake(d.CorrelationId)
 
 		err = s.republish(d.CorrelationId, d.Type, topic, response)
