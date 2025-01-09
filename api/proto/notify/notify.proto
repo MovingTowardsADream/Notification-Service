@@ -24,8 +24,8 @@ message PhoneNotify {
 }
 
 message Channels {
-  MailNotify mail = 1;
-  PhoneNotify phone = 2;
+  optional MailNotify mail = 1;
+  optional PhoneNotify phone = 2;
 }
 
 message SendMessageReq {
@@ -51,8 +51,8 @@ message PhoneApproval {
 }
 
 message Preferences {
-  MailApproval mail = 1;
-  PhoneApproval phone = 2;
+  optional MailApproval mail = 1;
+  optional PhoneApproval phone = 2;
 }
 
 message EditPreferencesReq {

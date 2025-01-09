@@ -2,7 +2,7 @@ package models
 
 type Notify struct {
 	UserID     string
-	NotifyType string
+	NotifyType NotifyType
 	Channels   struct {
 		Email struct {
 			Subject string
