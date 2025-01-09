@@ -1,6 +1,6 @@
 package models
 
-type NotifyType int32
+type NotifyType int8
 
 const (
 	NotifyTypeModerate    NotifyType = 0

@@ -8,6 +8,12 @@ import (
 	"github.com/streadway/amqp"
 )
 
+const (
+	_defaultPriorityMax = int32(3)
+)
+
+type CallConnector func() error
+
 type Params struct {
 	URL      string
 	WaitTime time.Duration
@@ -32,7 +38,7 @@ func NewConnection(consumerExchange string, topics []string, params Params) *Con
 	}
 }
 
-func (c *Connection) AttemptConnect(connector func() error) error {
+func (c *Connection) AttemptConnect(connector CallConnector) error {
 	var err error
 
 	for i := c.Attempts; i > 0; i-- {
@@ -67,95 +73,101 @@ func (c *Connection) connect() error {
 	return nil
 }
 
-func (c *Connection) ConnectWriter() error {
-	var err error
+func (c *Connection) ConnectWriter() CallConnector {
+	return func() error {
+		var err error
 
-	err = c.connect()
-	if err != nil {
-		return err
-	}
-
-	for _, topic := range c.Topics {
-		err = c.Channel.ExchangeDeclare(
-			topic,
-			"fanout",
-			true,
-			false,
-			false,
-			false,
-			nil,
-		)
+		err = c.connect()
 		if err != nil {
-			return fmt.Errorf("c.Channel.ExchangeDeclare for topic %s: %w", topic, err)
+			return err
 		}
-	}
 
-	return nil
+		for _, topic := range c.Topics {
+			err = c.Channel.ExchangeDeclare(
+				topic,
+				"fanout",
+				true,
+				false,
+				false,
+				false,
+				nil,
+			)
+			if err != nil {
+				return fmt.Errorf("c.Channel.ExchangeDeclare for topic %s: %w", topic, err)
+			}
+		}
+
+		return nil
+	}
 }
 
-func (c *Connection) ConnectReader() error {
-	var err error
+func (c *Connection) ConnectReader() CallConnector {
+	return func() error {
+		var err error
 
-	err = c.connect()
-	if err != nil {
-		return err
+		err = c.connect()
+		if err != nil {
+			return err
+		}
+
+		deliveries := make(map[string]<-chan amqp.Delivery)
+
+		for _, topic := range c.Topics {
+			err = c.Channel.ExchangeDeclare(
+				topic,
+				"fanout",
+				true,
+				false,
+				false,
+				false,
+				nil,
+			)
+			if err != nil {
+				return fmt.Errorf("c.Channel.ExchangeDeclare for topic %s: %w", topic, err)
+			}
+
+			queue, err := c.Channel.QueueDeclare(
+				"",
+				true,
+				false,
+				true,
+				false,
+				amqp.Table{
+					"x-max-priority": _defaultPriorityMax,
+				},
+			)
+			if err != nil {
+				return fmt.Errorf("c.Channel.QueueDeclare for topic %s: %w", topic, err)
+			}
+
+			err = c.Channel.QueueBind(
+				queue.Name,
+				"",
+				topic,
+				false,
+				nil,
+			)
+			if err != nil {
+				return fmt.Errorf("c.Channel.QueueBind for topic %s: %w", topic, err)
+			}
+
+			delivery, err := c.Channel.Consume(
+				queue.Name,
+				"",
+				false,
+				false,
+				false,
+				false,
+				nil,
+			)
+			if err != nil {
+				return fmt.Errorf("c.Channel.Consume for topic %s: %w", topic, err)
+			}
+
+			deliveries[topic] = delivery
+		}
+
+		c.Deliveries = deliveries
+		return nil
 	}
-
-	deliveries := make(map[string]<-chan amqp.Delivery)
-
-	for _, topic := range c.Topics {
-		err = c.Channel.ExchangeDeclare(
-			topic,
-			"fanout",
-			true,
-			false,
-			false,
-			false,
-			nil,
-		)
-		if err != nil {
-			return fmt.Errorf("c.Channel.ExchangeDeclare for topic %s: %w", topic, err)
-		}
-
-		queue, err := c.Channel.QueueDeclare(
-			"",
-			true,
-			false,
-			true,
-			false,
-			nil,
-		)
-		if err != nil {
-			return fmt.Errorf("c.Channel.QueueDeclare for topic %s: %w", topic, err)
-		}
-
-		err = c.Channel.QueueBind(
-			queue.Name,
-			"",
-			topic,
-			false,
-			nil,
-		)
-		if err != nil {
-			return fmt.Errorf("c.Channel.QueueBind for topic %s: %w", topic, err)
-		}
-
-		delivery, err := c.Channel.Consume(
-			queue.Name,
-			"",
-			false,
-			false,
-			false,
-			false,
-			nil,
-		)
-		if err != nil {
-			return fmt.Errorf("c.Channel.Consume for topic %s: %w", topic, err)
-		}
-
-		deliveries[topic] = delivery
-	}
-
-	c.Deliveries = deliveries
-	return nil
 }

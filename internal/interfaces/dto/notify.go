@@ -4,6 +4,17 @@ import (
 	"Notification_Service/internal/domain/models"
 )
 
+type MailInfo struct {
+	Mail    string `json:"mail"`
+	Subject string `json:"subject"`
+	Body    string `json:"body"`
+}
+
+type PhoneInfo struct {
+	Phone string `json:"phone"`
+	Body  string `json:"body"`
+}
+
 type MailDate struct {
 	Mail       string            `json:"mail"`
 	NotifyType models.NotifyType `json:"notify_type"`

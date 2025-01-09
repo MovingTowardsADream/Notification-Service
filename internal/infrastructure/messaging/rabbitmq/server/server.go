@@ -62,7 +62,7 @@ func New(url, serverExchange string, topics []string, router map[string]CallHand
 		opt(s)
 	}
 
-	err := s.conn.AttemptConnect(s.conn.ConnectReader)
+	err := s.conn.AttemptConnect(s.conn.ConnectReader())
 	if err != nil {
 		return nil, fmt.Errorf("rmq_rpc server - NewServer - s.conn.AttemptConnect: %w", err)
 	}
@@ -76,19 +76,19 @@ func (s *Server) MustRun() {
 	}
 }
 
-func (s *Server) topicConsume(topic string, deliveryChan <-chan amqp.Delivery) {
+func (s *Server) topicConsume(deliveryChan <-chan amqp.Delivery) {
 	for {
 		select {
 		case d, opened := <-deliveryChan:
 			if !opened {
-				s.logger.Warn("Channel for topic %s closed. Reconnecting...", topic)
+				s.logger.Warn("Channel for topic %s closed. Reconnecting...", d.Type)
 				s.reconnect()
 				return
 			}
 
 			_ = d.Ack(false)
 
-			s.serveCall(topic, &d)
+			s.serveCall(&d)
 		default:
 			continue
 		}
@@ -100,13 +100,13 @@ func (s *Server) consumer() {
 	case <-s.stop:
 		return
 	default:
-		for topic, deliveryChan := range s.conn.Deliveries {
-			go s.topicConsume(topic, deliveryChan)
+		for _, deliveryChan := range s.conn.Deliveries {
+			go s.topicConsume(deliveryChan)
 		}
 	}
 }
 
-func (s *Server) republish(corrID, handler, topic string, request any) error {
+func (s *Server) republish(corrID, handler string, priority uint8, request any) error {
 	var (
 		requestBody []byte
 		err         error
@@ -119,13 +119,14 @@ func (s *Server) republish(corrID, handler, topic string, request any) error {
 		}
 	}
 
-	err = s.conn.Channel.Publish(topic, "", false, false,
+	err = s.conn.Channel.Publish(handler, "", false, false,
 		amqp.Publishing{
 			ContentType:   "application/json",
 			CorrelationId: corrID,
 			ReplyTo:       s.serverExchange,
 			Type:          handler,
 			Body:          requestBody,
+			Priority:      priority,
 		})
 	if err != nil {
 		return fmt.Errorf("c.Channel.Publish: %w", err)
@@ -134,10 +135,10 @@ func (s *Server) republish(corrID, handler, topic string, request any) error {
 	return nil
 }
 
-func (s *Server) serveCall(topic string, d *amqp.Delivery) {
-	callHandler, ok := s.router[topic]
+func (s *Server) serveCall(d *amqp.Delivery) {
+	callHandler, ok := s.router[d.Type]
 	if !ok {
-		s.logger.Error("No handlers found for topic: %s", topic)
+		s.logger.Error("No handlers found for topic: %s", d.Type)
 		return
 	}
 	response, err := callHandler(d)
@@ -150,7 +151,7 @@ func (s *Server) serveCall(topic string, d *amqp.Delivery) {
 		}
 		s.addMistake(d.CorrelationId)
 
-		err = s.republish(d.CorrelationId, d.Type, topic, response)
+		err = s.republish(d.CorrelationId, d.Type, d.Priority, response)
 		if err != nil {
 			s.logger.Error("rmq_server - Server - serveCall - s.republish", s.logger.Err(err))
 			return
@@ -188,7 +189,7 @@ func (s *Server) deleteMistake(corrID string) {
 func (s *Server) reconnect() {
 	close(s.stop)
 
-	err := s.conn.AttemptConnect(s.conn.ConnectReader)
+	err := s.conn.AttemptConnect(s.conn.ConnectReader())
 	if err != nil {
 		s.error <- err
 		close(s.error)

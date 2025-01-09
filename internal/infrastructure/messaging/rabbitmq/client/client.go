@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
 
+	"Notification_Service/internal/domain/models"
 	rmq_rpc "Notification_Service/internal/infrastructure/messaging/rabbitmq"
 )
 
@@ -47,7 +48,7 @@ func New(url, serverExchange, clientExchange string, topics []string, opts ...Op
 		opt(c)
 	}
 
-	err := c.conn.AttemptConnect(c.conn.ConnectWriter)
+	err := c.conn.AttemptConnect(c.conn.ConnectWriter())
 	if err != nil {
 		return nil, fmt.Errorf("rmq_rpc client - NewClient - c.conn.AttemptConnect: %w", err)
 	}
@@ -55,7 +56,7 @@ func New(url, serverExchange, clientExchange string, topics []string, opts ...Op
 	return c, nil
 }
 
-func (c *Client) publish(corrID, handler, topic string, request any) error {
+func (c *Client) publish(corrID, handler string, priority models.NotifyType, request any) error {
 	var (
 		requestBody []byte
 		err         error
@@ -68,13 +69,14 @@ func (c *Client) publish(corrID, handler, topic string, request any) error {
 		}
 	}
 
-	err = c.conn.Channel.Publish(topic, "", false, false,
+	err = c.conn.Channel.Publish(handler, "", false, false,
 		amqp.Publishing{
 			ContentType:   "application/json",
 			CorrelationId: corrID,
 			ReplyTo:       c.conn.ConsumerExchange,
 			Type:          handler,
 			Body:          requestBody,
+			Priority:      uint8(priority),
 		})
 
 	if err != nil {
@@ -84,7 +86,7 @@ func (c *Client) publish(corrID, handler, topic string, request any) error {
 	return nil
 }
 
-func (c *Client) RemoteCall(ctx context.Context, handler, topic string, request any) error {
+func (c *Client) RemoteCall(ctx context.Context, handler string, priority models.NotifyType, request any) error {
 	select {
 	case <-c.stop:
 		time.Sleep(c.timeout)
@@ -97,7 +99,7 @@ func (c *Client) RemoteCall(ctx context.Context, handler, topic string, request 
 	}
 
 	corrID := uuid.New().String()
-	err := c.publish(corrID, handler, topic, request)
+	err := c.publish(corrID, handler, priority, request)
 	if err != nil {
 		return fmt.Errorf("rmq_rpc client - Client - RemoteCall - c.publish: %w", err)
 	}
