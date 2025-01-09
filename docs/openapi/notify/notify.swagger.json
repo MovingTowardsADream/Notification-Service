@@ -1,0 +1,224 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "notify/notify.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "Notify"
+    },
+    {
+      "name": "Users"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/edit_preferences": {
+      "post": {
+        "operationId": "Users_EditPreferences",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notifyEditPreferencesResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/notifyEditPreferencesReq"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/v1/send_message": {
+      "post": {
+        "operationId": "Notify_SendMessage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notifySendMessageResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/notifySendMessageReq"
+            }
+          }
+        ],
+        "tags": [
+          "Notify"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "notifyChannels": {
+      "type": "object",
+      "properties": {
+        "mail": {
+          "$ref": "#/definitions/notifyMailNotify"
+        },
+        "phone": {
+          "$ref": "#/definitions/notifyPhoneNotify"
+        }
+      }
+    },
+    "notifyEditPreferencesReq": {
+      "type": "object",
+      "properties": {
+        "userID": {
+          "type": "string"
+        },
+        "preferences": {
+          "$ref": "#/definitions/notifyPreferences"
+        }
+      }
+    },
+    "notifyEditPreferencesResp": {
+      "type": "object",
+      "properties": {
+        "respond": {
+          "type": "string"
+        }
+      }
+    },
+    "notifyMailApproval": {
+      "type": "object",
+      "properties": {
+        "approval": {
+          "type": "boolean"
+        }
+      }
+    },
+    "notifyMailNotify": {
+      "type": "object",
+      "properties": {
+        "subject": {
+          "type": "string"
+        },
+        "body": {
+          "type": "string"
+        }
+      }
+    },
+    "notifyNotifyType": {
+      "type": "string",
+      "enum": [
+        "moderate",
+        "significant",
+        "alert"
+      ],
+      "default": "moderate"
+    },
+    "notifyPhoneApproval": {
+      "type": "object",
+      "properties": {
+        "approval": {
+          "type": "boolean"
+        }
+      }
+    },
+    "notifyPhoneNotify": {
+      "type": "object",
+      "properties": {
+        "body": {
+          "type": "string"
+        }
+      }
+    },
+    "notifyPreferences": {
+      "type": "object",
+      "properties": {
+        "mail": {
+          "$ref": "#/definitions/notifyMailApproval"
+        },
+        "phone": {
+          "$ref": "#/definitions/notifyPhoneApproval"
+        }
+      }
+    },
+    "notifySendMessageReq": {
+      "type": "object",
+      "properties": {
+        "userID": {
+          "type": "string"
+        },
+        "notifyType": {
+          "$ref": "#/definitions/notifyNotifyType"
+        },
+        "channels": {
+          "$ref": "#/definitions/notifyChannels"
+        }
+      }
+    },
+    "notifySendMessageResp": {
+      "type": "object",
+      "properties": {
+        "respond": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

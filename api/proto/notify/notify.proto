@@ -5,9 +5,15 @@ package notify;
 option go_package = "./notify;notifyv1";
 
 import "validate/validate.proto";
+import "google/api/annotations.proto";
 
 service Notify {
-  rpc SendMessage (SendMessageReq) returns (SendMessageResp);
+  rpc SendMessage (SendMessageReq) returns (SendMessageResp){
+    option (google.api.http) = {
+      post: "/v1/send_message"
+      body: "*"
+    };
+  }
 }
 
 enum NotifyType {
@@ -41,7 +47,12 @@ message SendMessageResp {
 }
 
 service Users {
- rpc EditPreferences (EditPreferencesReq) returns (EditPreferencesResp);
+  rpc EditPreferences (EditPreferencesReq) returns (EditPreferencesResp) {
+    option (google.api.http) = {
+      post: "/v1/edit_preferences"
+      body: "*"
+    };
+  }
 }
 
 message MailApproval {
