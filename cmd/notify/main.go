@@ -14,7 +14,7 @@ import (
 func main() {
 	cfg := config.MustLoad()
 
-	log, err := logger.SetupLogger(cfg.Log.Level, cfg.Log.Path)
+	log, err := logger.Setup(cfg.Log.Level, cfg.Log.Path)
 
 	if err != nil {
 		panic(err)

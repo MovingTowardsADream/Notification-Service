@@ -16,13 +16,13 @@ const (
 
 type (
 	Config struct {
-		App       `yaml:"app"`
-		GRPC      `yaml:"grpc"`
-		Storage   `yaml:"storage"`
-		Messaging `yaml:"messaging"`
-		SMTP      `yaml:"smtp"`
-		Notify    `yaml:"notify"`
-		Log       `yaml:"logger"`
+		App         `yaml:"app"`
+		GRPC        `yaml:"grpc"`
+		Storage     `yaml:"storage"`
+		Messaging   `yaml:"messaging"`
+		SMTP        `yaml:"smtp"`
+		PhoneSender `yaml:"phone_sender"`
+		Log         `yaml:"logger"`
 	}
 
 	App struct {
@@ -63,17 +63,20 @@ type (
 		Server MessagingServer `yaml:"server"`
 		Client MessagingClient `yaml:"client"`
 		URL    string          `env:"RMQ_URL"        env-required:"true"      yaml:"url"`
+		Topics []string        `env:"RMQ_TOPICS"     env-required:"true"      yaml:"topics"`
 	}
 
 	SMTP struct {
 		Domain   string `yaml:"domain" env:"SMTP_DOMAIN"`
 		Port     int    `yaml:"port" env:"SMTP_PORT"`
-		UserName string `yaml:"user_ame" env:"SMTP_USERNAME"`
+		UserName string `yaml:"userName" env:"SMTP_USERNAME"`
 		Password string `yaml:"password" env:"SMTP_PASSWORD"`
 	}
 
-	Notify struct {
-		Mail string `yaml:"mail" env:"NOTIFY_MAIL"`
+	PhoneSender struct {
+		AccountSID          string `env:"TWILIO_ACCOUNT_SID" env-required:"true" yaml:"accountSID"`
+		AuthToken           string `env:"TWILIO_AUTH_TOKEN" env-required:"true" yaml:"authToken"`
+		MessagingServiceSID string `env:"TWILIO_MESSAGING_SERVICE_SID" env-required:"true" yaml:"messagingServiceSID"`
 	}
 
 	Log struct {

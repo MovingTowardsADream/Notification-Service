@@ -20,8 +20,7 @@ const (
 type Server struct {
 	gRPCServer *grpc.Server
 	log        *logger.Logger
-
-	port string
+	port       string
 }
 
 func New(log *logger.Logger, notifySend notify.NotifySend, editInfo users.EditInfo, opts ...Option) *Server {

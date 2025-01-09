@@ -6,7 +6,6 @@ import (
 
 type Client struct {
 	RestClient *twilio.RestClient
-
 	ServiceSID string
 }
 

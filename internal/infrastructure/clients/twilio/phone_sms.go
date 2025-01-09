@@ -9,6 +9,10 @@ import (
 	"Notification_Service/internal/interfaces/dto"
 )
 
+type PhoneSender interface {
+	SendPhoneSMS(ctx context.Context, notify dto.PhoneDate) error
+}
+
 type NotifyWorkerUseCase struct {
 	PhoneSender *Client
 }

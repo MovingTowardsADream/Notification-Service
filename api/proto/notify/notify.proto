@@ -2,7 +2,9 @@ syntax = "proto3";
 
 package notify;
 
-option go_package = "notify.v1;notifyv1";
+option go_package = "./notify;notifyv1";
+
+import "validate/validate.proto";
 
 service Notify {
   rpc SendMessage (SendMessageReq) returns (SendMessageResp);
@@ -15,12 +17,12 @@ enum NotifyType {
 }
 
 message MailNotify {
-  string subject = 1;
-  string body = 2;
+  string subject = 1 [(validate.rules).string.min_len = 1];
+  string body = 2 [(validate.rules).string.min_len = 1];
 }
 
 message PhoneNotify {
-  string body = 1;
+  string body = 1 [(validate.rules).string.min_len = 1];
 }
 
 message Channels {
@@ -29,9 +31,9 @@ message Channels {
 }
 
 message SendMessageReq {
-  string userID = 1;
-  NotifyType notifyType = 2;
-  Channels channels = 3;
+  string userID = 1 [(validate.rules).string = {min_len: 1, pattern: "^[a-zA-Z0-9_-]+$"}];
+  NotifyType notifyType = 2 [(validate.rules).enum = {}];
+  Channels channels = 3 [(validate.rules).message.required = true];
 }
 
 message SendMessageResp {
@@ -56,8 +58,8 @@ message Preferences {
 }
 
 message EditPreferencesReq {
-  string userID = 1;
-  Preferences preferences = 2;
+  string userID = 1 [(validate.rules).string = {min_len: 1, pattern: "^[a-zA-Z0-9_-]+$"}];
+  Preferences preferences = 2 [(validate.rules).message.required = true];
 }
 
 message EditPreferencesResp {

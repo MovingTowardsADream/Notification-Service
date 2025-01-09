@@ -8,7 +8,7 @@ import (
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/application/usecase"
-	grpc_err "Notification_Service/internal/infrastructure/grpc/errors"
+	grpcErr "Notification_Service/internal/infrastructure/grpc/errors"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -26,17 +26,19 @@ func Users(gRPC *grpc.Server, editInfo EditInfo) {
 }
 
 func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPreferencesReq) (*notifyv1.EditPreferencesResp, error) {
+	if err := req.ValidateAll(); err != nil {
+		return nil, grpcErr.ErrInvalidArgument
+	}
+
 	preferences := &dto.UserPreferences{
 		UserID:      req.UserID,
 		Preferences: dto.Preferences{},
 	}
-
 	if req.Preferences.Mail != nil {
 		preferences.Preferences.Mail = &dto.MailPreference{
 			Approval: req.Preferences.Mail.Approval,
 		}
 	}
-
 	if req.Preferences.Phone != nil {
 		preferences.Preferences.Phone = &dto.PhonePreference{
 			Approval: req.Preferences.Phone.Approval,
@@ -47,12 +49,12 @@ func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPref
 
 	if err != nil {
 		if errors.Is(err, usecase.ErrTimeout) {
-			return nil, grpc_err.ErrDeadlineExceeded
+			return nil, grpcErr.ErrDeadlineExceeded
 		} else if errors.Is(err, usecase.ErrNotFound) {
-			return nil, grpc_err.ErrNotFound
+			return nil, grpcErr.ErrNotFound
 		}
 
-		return nil, grpc_err.ErrInternalServer
+		return nil, grpcErr.ErrInternalServer
 	}
 
 	return &notifyv1.EditPreferencesResp{

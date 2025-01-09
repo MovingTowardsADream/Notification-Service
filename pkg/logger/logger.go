@@ -41,7 +41,7 @@ func (l *Logger) Err(err error) slog.Attr {
 	}
 }
 
-func SetupLogger(env string, filePath *string) (*Logger, error) {
+func Setup(env string, filePath *string) (*Logger, error) {
 	var log *slog.Logger
 	var file *os.File
 

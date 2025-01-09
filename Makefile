@@ -16,7 +16,9 @@ include .env
 #docker-build:
 #
 #docker-run:
-
+#
+# dounload validate
+# curl -O https://raw.githubusercontent.com/envoyproxy/protoc-gen-validate/main/validate/validate.proto
 
 
 compose-up:
@@ -32,10 +34,11 @@ migration-new-db:
 	go run ./cmd/migrator/main.go
 
 gen-api:
-	protoc -I ./api/proto \
-      ./api/proto/notify/notify.proto \
-      --go_out=./api/gen/go --go_opt=paths=source_relative \
-      --go-grpc_out=./api/gen/go --go-grpc_opt=paths=source_relative
+	protoc -I ./api/proto -I ./api/proto/validate \
+    	./api/proto/notify/notify.proto \
+    	--go_out=./api/gen/go --go_opt=paths=source_relative \
+    	--go-grpc_out=./api/gen/go --go-grpc_opt=paths=source_relative \
+    	--validate_out="lang=go:./api/gen/go"
 
 docs:
 	protoc --doc_out=./docs --doc_opt=markdown,docs.md ./api/proto/notify/notify.proto

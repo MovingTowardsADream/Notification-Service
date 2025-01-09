@@ -9,4 +9,5 @@ var (
 	ErrDeadlineExceeded = status.Error(codes.DeadlineExceeded, "deadline exceeded")
 	ErrInternalServer   = status.Error(codes.Internal, "internal server error")
 	ErrNotFound         = status.Error(codes.NotFound, "object not found")
+	ErrInvalidArgument  = status.Error(codes.InvalidArgument, "invalid argument")
 )
