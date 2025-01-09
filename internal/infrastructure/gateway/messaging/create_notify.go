@@ -19,9 +19,13 @@ func NewNotifyGateway(mes NotifyGatewayMessaging) *NotifyGateway {
 	return &NotifyGateway{mes}
 }
 
-func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailDate) error {
+func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.MailDate) error {
+	if mailNotify == nil {
+		return fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
+	}
+
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "createNewMailNotify", "mail", notify)
+		return gw.mes.RemoteCall(ctx, "mail_notify", "mail", &mailNotify)
 	})
 
 	if err != nil {
@@ -31,9 +35,13 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailD
 	return nil
 }
 
-func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, notify *dto.PhoneDate) error {
+func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto.PhoneDate) error {
+	if phoneNotify == nil {
+		return fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
+	}
+
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "createNewPhoneNotify", "phone", notify)
+		return gw.mes.RemoteCall(ctx, "phone_notify", "phone", phoneNotify)
 	})
 
 	if err != nil {

@@ -1,16 +1,20 @@
 package dto
 
+import (
+	"Notification_Service/internal/domain/models"
+)
+
 type MailDate struct {
-	Mail       string `json:"mail"`
-	NotifyType string `json:"notify_type"`
-	Subject    string `json:"subject"`
-	Body       string `json:"body"`
+	Mail       string            `json:"mail"`
+	NotifyType models.NotifyType `json:"notify_type"`
+	Subject    string            `json:"subject"`
+	Body       string            `json:"body"`
 }
 
 type PhoneDate struct {
-	Phone      string `json:"phone"`
-	NotifyType string `json:"notify_type"`
-	Body       string `json:"body"`
+	Phone      string            `json:"phone"`
+	NotifyType models.NotifyType `json:"notify_type"`
+	Body       string            `json:"body"`
 }
 
 type MailChannel struct {
@@ -28,7 +32,7 @@ type Channels struct {
 }
 
 type ReqNotification struct {
-	UserID     string   `json:"user_id"`
-	NotifyType string   `json:"notify_type"`
-	Channels   Channels `json:"channels"`
+	UserID     string            `json:"user_id"`
+	NotifyType models.NotifyType `json:"notify_type"`
+	Channels   Channels          `json:"channels"`
 }

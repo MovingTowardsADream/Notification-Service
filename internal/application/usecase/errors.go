@@ -1,11 +1,10 @@
 package usecase
 
 import (
-	"context"
 	"errors"
 )
 
 var (
-	ErrTimeout  = context.DeadlineExceeded
+	ErrTimeout  = errors.New("deadline exceeded")
 	ErrNotFound = errors.New("not found")
 )

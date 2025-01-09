@@ -8,20 +8,21 @@ import (
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/application/usecase"
+	"Notification_Service/internal/domain/models"
 	grpcErr "Notification_Service/internal/infrastructure/grpc/errors"
 	"Notification_Service/internal/interfaces/dto"
 )
 
-type NotifySend interface {
-	SendNotifyForUser(ctx context.Context, notifyRequest *dto.ReqNotification) error
+type SendersNotify interface {
+	SendToUser(ctx context.Context, notifyRequest *dto.ReqNotification) error
 }
 
 type sendNotifyRoutes struct {
 	notifyv1.UnimplementedNotifyServer
-	notifySend NotifySend
+	notifySend SendersNotify
 }
 
-func Notify(gRPC *grpc.Server, notifySend NotifySend) {
+func Notify(gRPC *grpc.Server, notifySend SendersNotify) {
 	notifyv1.RegisterNotifyServer(gRPC, &sendNotifyRoutes{notifySend: notifySend})
 }
 
@@ -30,9 +31,9 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 		return nil, grpcErr.ErrInvalidArgument
 	}
 
-	requestNotification := &dto.ReqNotification{
+	dataNotify := &dto.ReqNotification{
 		UserID:     req.UserID,
-		NotifyType: req.NotifyType.String(),
+		NotifyType: models.NotifyType(req.NotifyType),
 		Channels: dto.Channels{
 			Mail: &dto.MailChannel{
 				Subject: req.Channels.Mail.Subject,
@@ -44,7 +45,7 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 		},
 	}
 
-	err := s.notifySend.SendNotifyForUser(ctx, requestNotification)
+	err := s.notifySend.SendToUser(ctx, dataNotify)
 
 	if err != nil {
 		if errors.Is(err, usecase.ErrTimeout) {

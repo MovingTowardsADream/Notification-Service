@@ -54,10 +54,10 @@ func (ur *UsersRepo) GetUserCommunication(
 	return &userCommunication, nil
 }
 
-func (ur *UsersRepo) EditUserPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
+func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
 	tx, err := ur.storage.Pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("NotifyRepo.EditUserPreferences - r.Pool.Begin: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - r.Pool.Begin: %v", err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -73,7 +73,7 @@ func (ur *UsersRepo) EditUserPreferences(ctx context.Context, preferences *dto.U
 		if errors.Is(err, pgx.ErrNoRows) {
 			return repoErr.ErrNotFound
 		}
-		return fmt.Errorf("NotifyRepo.EditUserPreferences - tx.QueryRow: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - tx.QueryRow: %v", err)
 	}
 
 	if preferences.Preferences.Mail == nil {
@@ -96,12 +96,12 @@ func (ur *UsersRepo) EditUserPreferences(ctx context.Context, preferences *dto.U
 
 	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
-		return fmt.Errorf("NotifyRepo.EditUserPreferences - tx.Exec: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - tx.Exec: %v", err)
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return fmt.Errorf("NotifyRepo.EditUserPreferences - tx.Commit: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - tx.Commit: %v", err)
 	}
 
 	return nil

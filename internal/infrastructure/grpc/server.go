@@ -23,7 +23,7 @@ type Server struct {
 	port       string
 }
 
-func New(log *logger.Logger, notifySend notify.NotifySend, editInfo users.EditInfo, opts ...Option) *Server {
+func New(log *logger.Logger, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
 	s := &Server{
 		log:  log,
 		port: _defaultPort,
@@ -42,7 +42,7 @@ func New(log *logger.Logger, notifySend notify.NotifySend, editInfo users.EditIn
 		),
 	)
 
-	notify.Notify(gRPCServer, notifySend)
+	notify.Notify(gRPCServer, notifySender)
 	users.Users(gRPCServer, editInfo)
 
 	s.gRPCServer = gRPCServer

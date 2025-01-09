@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	repoErr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
 )
@@ -13,36 +14,33 @@ const (
 	_defaultTimeout = 5 * time.Second
 )
 
-type UsersDataPreferences interface {
-	EditUserPreferences(ctx context.Context, preferences *dto.UserPreferences) error
+type UserPreferences interface {
+	EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error
 }
 
 type EditInfo struct {
-	l             *logger.Logger
-	usersDataPref UsersDataPreferences
+	l         *logger.Logger
+	usersData UserPreferences
 }
 
-func NewEditInfo(l *logger.Logger, usersDataPref UsersDataPreferences) *EditInfo {
+func NewEditInfo(l *logger.Logger, usersDataPref UserPreferences) *EditInfo {
 	return &EditInfo{
-		l:             l,
-		usersDataPref: usersDataPref,
+		l:         l,
+		usersData: usersDataPref,
 	}
 }
 
 func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
-	ctxTimeout, cancel := context.WithTimeout(ctx, _defaultTimeout)
-	defer cancel()
-
-	err := e.usersDataPref.EditUserPreferences(ctxTimeout, preferences)
+	err := e.usersData.EditPreferences(ctx, preferences)
 
 	if err != nil {
-		if errors.Is(err, ErrTimeout) {
-			return ErrTimeout
-		} else if errors.Is(err, ErrNotFound) {
+		if errors.Is(err, repoErr.ErrNotFound) {
 			return ErrNotFound
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			return ErrTimeout
 		}
 
-		e.l.Error("EditUserPreferences - e.usersDataPref.EditUserPreferences: ", e.l.Err(err))
+		e.l.Error("EditUserPreferences - e.usersDataPref.EditPreferences: ", e.l.Err(err))
 
 		return err
 	}

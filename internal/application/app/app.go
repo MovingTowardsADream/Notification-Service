@@ -59,11 +59,11 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	gateway := gatewayMessaging.NewNotifyGateway(mesClient)
 
-	notifySend := usecase.NewNotifySend(l, usersRepo, gateway)
+	notifySender := usecase.NewNotifySender(l, usersRepo, gateway)
 	editInfo := usecase.NewEditInfo(l, usersRepo)
 
 	gRPCServer := grpc.New(
-		l, notifySend, editInfo, grpc.Port(cfg.GRPC.Port),
+		l, notifySender, editInfo, grpc.Port(cfg.GRPC.Port),
 	)
 
 	phoneSenderClient := clTwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)
