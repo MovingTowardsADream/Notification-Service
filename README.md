@@ -13,7 +13,9 @@ make build
 ## Description of the service
 This service is a microservice that is responsible for sending notifications to various channels. 
 
-The service is implemented using a queue - `RabbitMQ` to implement a `Worker Pool` with a guarantee of sending messages. Messages are sent using a proprietary SMTP server running with `Mailcow`.
+The service is implemented using a queue - `RabbitMQ` to implement a `Worker Pool` with a guarantee of sending messages. Each channel has its own topic, and within the topic there is a priority of messages. 
+
+Messages are sent using a proprietary SMTP server running with `Postfix`.
 
 ## Environment Variables and Configuration
 For the application to work correctly, you must specify environment variables in the .env file in the root directory. Below are the variables themselves and a brief description:
