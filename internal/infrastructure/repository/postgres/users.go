@@ -7,7 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	repoErr "Notification_Service/internal/infrastructure/repository/errors"
+	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -46,7 +46,7 @@ func (ur *UsersRepo) GetUserCommunication(
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, repoErr.ErrNotFound
+			return nil, repoerr.ErrNotFound
 		}
 		return nil, fmt.Errorf("NotifyRepo.GetUserCommunication - r.Pool.QueryRow: %v", err)
 	}
@@ -71,7 +71,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	err = tx.QueryRow(ctx, sql, args...).Scan(&emailNotify, &phoneNotify)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return repoErr.ErrNotFound
+			return repoerr.ErrNotFound
 		}
 		return fmt.Errorf("UsersRepo.EditPreferences - tx.QueryRow: %v", err)
 	}

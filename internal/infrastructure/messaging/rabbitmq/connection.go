@@ -1,4 +1,4 @@
-package rmq_rpc
+package rmqrpc
 
 import (
 	"fmt"

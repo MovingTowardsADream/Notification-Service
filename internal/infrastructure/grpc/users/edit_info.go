@@ -8,7 +8,7 @@ import (
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/application/usecase"
-	grpcErr "Notification_Service/internal/infrastructure/grpc/errors"
+	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -27,7 +27,7 @@ func Users(gRPC *grpc.Server, editInfo EditInfo) {
 
 func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPreferencesReq) (*notifyv1.EditPreferencesResp, error) {
 	if err := req.ValidateAll(); err != nil {
-		return nil, grpcErr.ErrInvalidArgument
+		return nil, grpcerr.ErrInvalidArgument
 	}
 
 	preferences := &dto.UserPreferences{
@@ -49,12 +49,12 @@ func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPref
 
 	if err != nil {
 		if errors.Is(err, usecase.ErrTimeout) {
-			return nil, grpcErr.ErrDeadlineExceeded
+			return nil, grpcerr.ErrDeadlineExceeded
 		} else if errors.Is(err, usecase.ErrNotFound) {
-			return nil, grpcErr.ErrNotFound
+			return nil, grpcerr.ErrNotFound
 		}
 
-		return nil, grpcErr.ErrInternalServer
+		return nil, grpcerr.ErrInternalServer
 	}
 
 	return &notifyv1.EditPreferencesResp{

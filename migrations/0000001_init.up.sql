@@ -26,7 +26,7 @@ CREATE INDEX IF NOT EXISTS users_idx ON users(id);
 
 CREATE TABLE IF NOT EXISTS notifications
 (
-    id          BIGSERIAL       not null unique,
+    id BIGSERIAL not null unique,
     email_notify BOOLEAN NOT NULL,
     phone_notify BOOLEAN NOT NULL,
     user_id TEXT NOT NULL REFERENCES users(id)

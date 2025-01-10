@@ -1,4 +1,4 @@
-package amqp_rpc
+package amqprpc
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 
 	"Notification_Service/internal/infrastructure/smtp"
 
-	rmq_server "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
+	rmqserver "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -17,7 +17,7 @@ type notifyWorkerRoutes struct {
 	w smtp.NotifyWorker
 }
 
-func newNotifyWorkerRoutes(routes map[string]rmq_server.CallHandler, w smtp.NotifyWorker) {
+func newNotifyWorkerRoutes(routes map[string]rmqserver.CallHandler, w smtp.NotifyWorker) {
 	r := &notifyWorkerRoutes{w}
 	{
 		routes["mail_notify"] = r.createNewMailNotify()
@@ -25,7 +25,7 @@ func newNotifyWorkerRoutes(routes map[string]rmq_server.CallHandler, w smtp.Noti
 	}
 }
 
-func (r *notifyWorkerRoutes) createNewMailNotify() rmq_server.CallHandler {
+func (r *notifyWorkerRoutes) createNewMailNotify() rmqserver.CallHandler {
 	return func(d *amqp.Delivery) (any, error) {
 		var request dto.MailDate
 
@@ -42,7 +42,7 @@ func (r *notifyWorkerRoutes) createNewMailNotify() rmq_server.CallHandler {
 	}
 }
 
-func (r *notifyWorkerRoutes) createNewPhoneNotify() rmq_server.CallHandler {
+func (r *notifyWorkerRoutes) createNewPhoneNotify() rmqserver.CallHandler {
 	return func(d *amqp.Delivery) (any, error) {
 		var request dto.PhoneDate
 

@@ -1,13 +1,13 @@
-package amqp_rpc
+package amqprpc
 
 import (
 	"Notification_Service/internal/infrastructure/smtp"
 
-	rmqServer "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
+	rmqserver "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
 )
 
-func NewRouter(r smtp.NotifyWorker) map[string]rmqServer.CallHandler {
-	routes := make(map[string]rmqServer.CallHandler)
+func NewRouter(r smtp.NotifyWorker) map[string]rmqserver.CallHandler {
+	routes := make(map[string]rmqserver.CallHandler)
 	{
 		newNotifyWorkerRoutes(routes, r)
 	}

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	repoErr "Notification_Service/internal/infrastructure/repository/errors"
+	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
 )
@@ -40,7 +40,7 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	userCommunication, err := n.usersDataComm.GetUserCommunication(ctxTimeout, &dto.IdentificationUserCommunication{ID: notifyRequest.UserID})
 
 	if err != nil {
-		if errors.Is(err, repoErr.ErrNotFound) {
+		if errors.Is(err, repoerr.ErrNotFound) {
 			return ErrNotFound
 		} else if errors.Is(err, context.DeadlineExceeded) {
 			return ErrTimeout

@@ -4,21 +4,21 @@ import (
 	"context"
 
 	"Notification_Service/internal/application/usecase"
-	clTwilio "Notification_Service/internal/infrastructure/clients/twilio"
+	cltwilio "Notification_Service/internal/infrastructure/clients/twilio"
 	"Notification_Service/internal/infrastructure/config"
-	gatewayMessaging "Notification_Service/internal/infrastructure/gateway/messaging"
+	gwmessaging "Notification_Service/internal/infrastructure/gateway/messaging"
 	"Notification_Service/internal/infrastructure/grpc"
-	rmqClient "Notification_Service/internal/infrastructure/messaging/rabbitmq/client"
-	rmqServer "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
+	rmqclient "Notification_Service/internal/infrastructure/messaging/rabbitmq/client"
+	rmqserver "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	"Notification_Service/internal/infrastructure/smtp"
-	"Notification_Service/internal/infrastructure/workers/amqp_rpc"
+	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
 	"Notification_Service/pkg/logger"
 )
 
 type App struct {
 	Server          *grpc.Server
-	MessagingServer *rmqServer.Server
+	MessagingServer *rmqserver.Server
 	Storage         *postgres.Postgres
 }
 
@@ -41,14 +41,14 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		panic("storage ping error: " + err.Error())
 	}
 
-	mesClient, err := rmqClient.New(
+	mesClient, err := rmqclient.New(
 		cfg.Messaging.URL,
 		cfg.Messaging.Server.RPCExchange,
 		cfg.Messaging.Client.RPCExchange,
 		cfg.Messaging.Topics,
-		rmqClient.ConnAttempts(cfg.Messaging.Client.Attempts),
-		rmqClient.ConnWaitTime(cfg.Messaging.Client.WaitTime),
-		rmqClient.Timeout(cfg.Messaging.Client.Timeout),
+		rmqclient.ConnAttempts(cfg.Messaging.Client.Attempts),
+		rmqclient.ConnWaitTime(cfg.Messaging.Client.WaitTime),
+		rmqclient.Timeout(cfg.Messaging.Client.Timeout),
 	)
 
 	if err != nil {
@@ -57,7 +57,7 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	usersRepo := postgres.NewUsersRepo(storage)
 
-	gateway := gatewayMessaging.NewNotifyGateway(mesClient)
+	gateway := gwmessaging.NewNotifyGateway(mesClient)
 
 	notifySender := usecase.NewNotifySender(l, usersRepo, gateway)
 	editInfo := usecase.NewEditInfo(l, usersRepo)
@@ -66,7 +66,7 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		l, notifySender, editInfo, grpc.Port(cfg.GRPC.Port),
 	)
 
-	phoneSenderClient := clTwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)
+	phoneSenderClient := cltwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)
 
 	_ = phoneSenderClient
 
@@ -81,18 +81,18 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	workerUseCase := smtp.NewNotifyWorker(smtpClient)
 
-	rmqRouter := amqp_rpc.NewRouter(workerUseCase)
+	rmqRouter := amqprpc.NewRouter(workerUseCase)
 
-	mesServer, err := rmqServer.New(
+	mesServer, err := rmqserver.New(
 		cfg.Messaging.URL,
 		cfg.Messaging.Server.RPCExchange,
 		cfg.Messaging.Topics,
 		rmqRouter,
 		l,
-		rmqServer.GoroutinesCount(cfg.Messaging.Server.GoroutinesCount),
-		rmqServer.ConnAttempts(cfg.Messaging.Server.Attempts),
-		rmqServer.ConnWaitTime(cfg.Messaging.Server.WaitTime),
-		rmqServer.Timeout(cfg.Messaging.Server.Timeout),
+		rmqserver.GoroutinesCount(cfg.Messaging.Server.GoroutinesCount),
+		rmqserver.ConnAttempts(cfg.Messaging.Server.Attempts),
+		rmqserver.ConnWaitTime(cfg.Messaging.Server.WaitTime),
+		rmqserver.Timeout(cfg.Messaging.Server.Timeout),
 	)
 
 	if err != nil {

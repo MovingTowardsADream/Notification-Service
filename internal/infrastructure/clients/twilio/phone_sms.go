@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	restTwilio "github.com/twilio/twilio-go/rest/api/v2010"
+	resttwilio "github.com/twilio/twilio-go/rest/api/v2010"
 
 	"Notification_Service/internal/interfaces/dto"
 )
@@ -22,7 +22,7 @@ func NewNotifyWorker(sender *Client) *NotifyWorkerUseCase {
 }
 
 func (n *NotifyWorkerUseCase) SendPhoneSMS(ctx context.Context, notify dto.PhoneDate) error {
-	params := &restTwilio.CreateMessageParams{}
+	params := &resttwilio.CreateMessageParams{}
 	params.SetMessagingServiceSid(n.PhoneSender.ServiceSID)
 	params.SetTo(notify.Phone)
 	params.SetBody(notify.Body)

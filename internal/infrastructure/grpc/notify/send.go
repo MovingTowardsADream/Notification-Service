@@ -9,7 +9,7 @@ import (
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/application/usecase"
 	"Notification_Service/internal/domain/models"
-	grpcErr "Notification_Service/internal/infrastructure/grpc/errors"
+	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -28,7 +28,7 @@ func Notify(gRPC *grpc.Server, notifySend SendersNotify) {
 
 func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMessageReq) (*notifyv1.SendMessageResp, error) {
 	if err := req.ValidateAll(); err != nil {
-		return nil, grpcErr.ErrInvalidArgument
+		return nil, grpcerr.ErrInvalidArgument
 	}
 
 	dataNotify := &dto.ReqNotification{
@@ -49,12 +49,12 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 
 	if err != nil {
 		if errors.Is(err, usecase.ErrTimeout) {
-			return nil, grpcErr.ErrDeadlineExceeded
+			return nil, grpcerr.ErrDeadlineExceeded
 		} else if errors.Is(err, usecase.ErrNotFound) {
-			return nil, grpcErr.ErrNotFound
+			return nil, grpcerr.ErrNotFound
 		}
 
-		return nil, grpcErr.ErrInternalServer
+		return nil, grpcerr.ErrInternalServer
 	}
 
 	return &notifyv1.SendMessageResp{

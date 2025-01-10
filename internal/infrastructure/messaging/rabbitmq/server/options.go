@@ -1,4 +1,4 @@
-package rmq_server
+package rmqserver
 
 import "time"
 

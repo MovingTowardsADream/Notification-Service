@@ -5,7 +5,7 @@ import (
 	"errors"
 	"time"
 
-	repoErr "Notification_Service/internal/infrastructure/repository/errors"
+	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
 )
@@ -34,7 +34,7 @@ func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.Use
 	err := e.usersData.EditPreferences(ctx, preferences)
 
 	if err != nil {
-		if errors.Is(err, repoErr.ErrNotFound) {
+		if errors.Is(err, repoerr.ErrNotFound) {
 			return ErrNotFound
 		} else if errors.Is(err, context.DeadlineExceeded) {
 			return ErrTimeout

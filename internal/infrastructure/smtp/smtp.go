@@ -16,7 +16,6 @@ type Params struct {
 
 type SMTP struct {
 	Dialer *gomail.Dialer
-
 	Params Params
 	Port   int
 }

@@ -1,4 +1,4 @@
-package rmq_server
+package rmqserver
 
 import (
 	"encoding/json"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/streadway/amqp"
 
-	"Notification_Service/internal/infrastructure/messaging/rabbitmq"
+	rmqrpc "Notification_Service/internal/infrastructure/messaging/rabbitmq"
 	"Notification_Service/pkg/logger"
 )
 
@@ -25,7 +25,7 @@ type CallHandler func(*amqp.Delivery) (any, error)
 
 type Server struct {
 	serverExchange string
-	conn           *rmq_rpc.Connection
+	conn           *rmqrpc.Connection
 	error          chan error
 	stop           chan struct{}
 	router         map[string]CallHandler
@@ -40,7 +40,7 @@ type Server struct {
 }
 
 func New(url, serverExchange string, topics []string, router map[string]CallHandler, l *logger.Logger, opts ...Option) (*Server, error) {
-	cfg := rmq_rpc.Params{
+	cfg := rmqrpc.Params{
 		URL:      url,
 		WaitTime: _defaultWaitTime,
 		Attempts: _defaultAttempts,
@@ -48,7 +48,7 @@ func New(url, serverExchange string, topics []string, router map[string]CallHand
 
 	s := &Server{
 		serverExchange:  serverExchange,
-		conn:            rmq_rpc.NewConnection(serverExchange, topics, cfg),
+		conn:            rmqrpc.NewConnection(serverExchange, topics, cfg),
 		error:           make(chan error),
 		stop:            make(chan struct{}),
 		router:          router,
@@ -79,6 +79,8 @@ func (s *Server) MustRun() {
 func (s *Server) topicConsume(deliveryChan <-chan amqp.Delivery) {
 	for {
 		select {
+		case <-s.stop:
+			return
 		case d, opened := <-deliveryChan:
 			if !opened {
 				s.logger.Warn("Channel for topic %s closed. Reconnecting...", d.Type)
@@ -89,20 +91,13 @@ func (s *Server) topicConsume(deliveryChan <-chan amqp.Delivery) {
 			_ = d.Ack(false)
 
 			s.serveCall(&d)
-		default:
-			continue
 		}
 	}
 }
 
 func (s *Server) consumer() {
-	select {
-	case <-s.stop:
-		return
-	default:
-		for _, deliveryChan := range s.conn.Deliveries {
-			go s.topicConsume(deliveryChan)
-		}
+	for _, deliveryChan := range s.conn.Deliveries {
+		go s.topicConsume(deliveryChan)
 	}
 }
 
@@ -143,13 +138,13 @@ func (s *Server) serveCall(d *amqp.Delivery) {
 	}
 	response, err := callHandler(d)
 	if err != nil {
+		s.addMistake(d.CorrelationId)
 		count := s.getMistake(d.CorrelationId)
 		if count >= 3 {
 			s.deleteMistake(d.CorrelationId)
 			s.logger.Error("Max retry limit reached for message: %s", d.CorrelationId)
 			return
 		}
-		s.addMistake(d.CorrelationId)
 
 		err = s.republish(d.CorrelationId, d.Type, d.Priority, response)
 		if err != nil {

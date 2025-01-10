@@ -1,4 +1,4 @@
-package rmq_client
+package rmqclient
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/streadway/amqp"
 
 	"Notification_Service/internal/domain/models"
-	rmq_rpc "Notification_Service/internal/infrastructure/messaging/rabbitmq"
+	rmqrpc "Notification_Service/internal/infrastructure/messaging/rabbitmq"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 )
 
 type Client struct {
-	conn *rmq_rpc.Connection
+	conn *rmqrpc.Connection
 
 	serverExchange string
 	timeout        time.Duration
@@ -30,14 +30,14 @@ type Client struct {
 }
 
 func New(url, serverExchange, clientExchange string, topics []string, opts ...Option) (*Client, error) {
-	cfg := rmq_rpc.Params{
+	cfg := rmqrpc.Params{
 		URL:      url,
 		WaitTime: _defaultWaitTime,
 		Attempts: _defaultAttempts,
 	}
 
 	c := &Client{
-		conn:           rmq_rpc.NewConnection(clientExchange, topics, cfg),
+		conn:           rmqrpc.NewConnection(clientExchange, topics, cfg),
 		serverExchange: serverExchange,
 		error:          make(chan error),
 		stop:           make(chan struct{}),
@@ -50,7 +50,7 @@ func New(url, serverExchange, clientExchange string, topics []string, opts ...Op
 
 	err := c.conn.AttemptConnect(c.conn.ConnectWriter())
 	if err != nil {
-		return nil, fmt.Errorf("rmq_rpc client - NewClient - c.conn.AttemptConnect: %w", err)
+		return nil, fmt.Errorf("rmqrpc client - NewClient - c.conn.AttemptConnect: %w", err)
 	}
 
 	return c, nil
@@ -101,7 +101,7 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 	corrID := uuid.New().String()
 	err := c.publish(corrID, handler, priority, request)
 	if err != nil {
-		return fmt.Errorf("rmq_rpc client - Client - RemoteCall - c.publish: %w", err)
+		return fmt.Errorf("rmqrpc client - Client - RemoteCall - c.publish: %w", err)
 	}
 	return nil
 }
@@ -122,7 +122,7 @@ func (c *Client) Shutdown() error {
 
 	err := c.conn.Connection.Close()
 	if err != nil {
-		return fmt.Errorf("rmq_rpc client - Client - Shutdown - c.Connection.Close: %w", err)
+		return fmt.Errorf("rmqrpc client - Client - Shutdown - c.Connection.Close: %w", err)
 	}
 
 	return nil

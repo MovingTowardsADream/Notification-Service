@@ -4,7 +4,7 @@ import (
 	"log/slog"
 	"os"
 
-	"Notification_Service/pkg/logger/multi_handler"
+	multihandler "Notification_Service/pkg/logger/multi_handler"
 )
 
 const (
@@ -50,28 +50,24 @@ func Setup(env string, filePath *string) (*Logger, error) {
 		if filePath == nil {
 			return nil, ErrEmptyFilePath
 		}
-		file, err := os.OpenFile(*filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		file, err := os.OpenFile(*filePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o666)
 		if err != nil {
 			return nil, ErrOpenFile
 		}
 
 		log = slog.New(
-			multi_handler.NewMultiHandler(
+			multihandler.NewMultiHandler(
 				slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
 				slog.NewTextHandler(file, &slog.HandlerOptions{Level: slog.LevelDebug}),
 			),
 		)
 	case _envTesting:
 		log = slog.New(
-			multi_handler.NewMultiHandler(
-				slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-			),
+			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
 	case _envProd:
 		log = slog.New(
-			multi_handler.NewMultiHandler(
-				slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
-			),
+			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
 	default:
 		return nil, ErrUnknownEnv

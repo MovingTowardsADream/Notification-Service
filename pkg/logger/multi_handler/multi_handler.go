@@ -1,4 +1,4 @@
-package multi_handler
+package multihandler
 
 import (
 	"context"
