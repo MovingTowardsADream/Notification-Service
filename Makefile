@@ -40,8 +40,8 @@ compose-down:
 build: compose-up
 	docker-compose up --build
 
-migration-new-db:
-	go run ./cmd/migrator/main.go
+migrate:
+	go run ./cmd/migrate/main.go
 
 gen-api:
 	protoc -I ./api/proto -I ./api/proto/validate \
