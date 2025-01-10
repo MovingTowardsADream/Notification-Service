@@ -9,6 +9,7 @@ import (
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/application/usecase"
 	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
+	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -30,20 +31,7 @@ func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPref
 		return nil, grpcerr.ErrInvalidArgument
 	}
 
-	preferences := &dto.UserPreferences{
-		UserID:      req.UserID,
-		Preferences: dto.Preferences{},
-	}
-	if req.Preferences.Mail != nil {
-		preferences.Preferences.Mail = &dto.MailPreference{
-			Approval: req.Preferences.Mail.Approval,
-		}
-	}
-	if req.Preferences.Phone != nil {
-		preferences.Preferences.Phone = &dto.PhonePreference{
-			Approval: req.Preferences.Phone.Approval,
-		}
-	}
+	preferences := convert.EditPreferencesReqToUserPreferences(req)
 
 	err := s.editInfo.EditUserPreferences(ctx, preferences)
 

@@ -8,8 +8,8 @@ import (
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/application/usecase"
-	"Notification_Service/internal/domain/models"
 	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
+	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -31,21 +31,13 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 		return nil, grpcerr.ErrInvalidArgument
 	}
 
-	dataNotify := &dto.ReqNotification{
-		UserID:     req.UserID,
-		NotifyType: models.NotifyType(req.NotifyType),
-		Channels: dto.Channels{
-			Mail: &dto.MailChannel{
-				Subject: req.Channels.Mail.Subject,
-				Body:    req.Channels.Mail.Body,
-			},
-			Phone: &dto.PhoneChannel{
-				Body: req.Channels.Phone.Body,
-			},
-		},
+	dataNotify, err := convert.SendMessageReqToReqNotification(req)
+
+	if err != nil {
+		return nil, grpcerr.ErrInvalidArgument
 	}
 
-	err := s.notifySend.SendToUser(ctx, dataNotify)
+	err = s.notifySend.SendToUser(ctx, dataNotify)
 
 	if err != nil {
 		if errors.Is(err, usecase.ErrTimeout) {

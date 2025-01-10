@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	repoerr "Notification_Service/internal/infrastructure/repository/errors"
+	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
 )
@@ -37,7 +38,10 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	ctxTimeout, cancel := context.WithTimeout(ctx, _defaultTimeout)
 	defer cancel()
 
-	userCommunication, err := n.usersDataComm.GetUserCommunication(ctxTimeout, &dto.IdentificationUserCommunication{ID: notifyRequest.UserID})
+	userCommunication, err := n.usersDataComm.GetUserCommunication(
+		ctxTimeout,
+		convert.ReqNotifyToIDUserCommunication(notifyRequest),
+	)
 
 	if err != nil {
 		if errors.Is(err, repoerr.ErrNotFound) {
@@ -52,12 +56,7 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	}
 
 	if userCommunication.MailPref {
-		mailNotify := &dto.MailDate{
-			Mail:       userCommunication.Email,
-			NotifyType: notifyRequest.NotifyType,
-			Subject:    notifyRequest.Channels.Mail.Subject,
-			Body:       notifyRequest.Channels.Mail.Body,
-		}
+		mailNotify := convert.ToMailDate(notifyRequest, userCommunication)
 
 		err = n.gateway.CreateMailNotify(ctxTimeout, mailNotify)
 
@@ -67,11 +66,7 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	}
 
 	if userCommunication.PhonePref {
-		phoneNotify := &dto.PhoneDate{
-			Phone:      userCommunication.Phone,
-			NotifyType: notifyRequest.NotifyType,
-			Body:       notifyRequest.Channels.Phone.Body,
-		}
+		phoneNotify := convert.ToPhoneDate(notifyRequest, userCommunication)
 
 		err = n.gateway.CreatePhoneNotify(ctxTimeout, phoneNotify)
 

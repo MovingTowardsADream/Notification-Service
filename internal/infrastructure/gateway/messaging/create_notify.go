@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"Notification_Service/internal/domain/models"
+	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -26,11 +27,7 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.M
 	}
 
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "mail_notify", mailNotify.NotifyType, dto.MailInfo{
-			Mail:    mailNotify.Mail,
-			Subject: mailNotify.Subject,
-			Body:    mailNotify.Body,
-		})
+		return gw.mes.RemoteCall(ctx, "mail_notify", mailNotify.NotifyType, convert.MailDateToMailInfo(mailNotify))
 	})
 
 	if err != nil {
@@ -46,10 +43,7 @@ func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto
 	}
 
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "phone_notify", phoneNotify.NotifyType, dto.PhoneInfo{
-			Phone: phoneNotify.Phone,
-			Body:  phoneNotify.Body,
-		})
+		return gw.mes.RemoteCall(ctx, "phone_notify", phoneNotify.NotifyType, convert.PhoneDateToPhoneInfo(phoneNotify))
 	})
 
 	if err != nil {
