@@ -55,7 +55,8 @@ docs:
            -I ./api/proto/validate \
            -I ./api/proto/google \
            ./api/proto/notify/notify.proto \
-           --openapiv2_out=./docs/openapi --openapiv2_opt=logtostderr=true
+           --openapiv2_out=./docs/openapi --openapiv2_opt=logtostderr=true \
+           --doc_out=./docs/protocol --doc_opt=html,documentation.html
 
 lint:
 	golangci-lint run
