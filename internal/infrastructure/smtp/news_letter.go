@@ -4,43 +4,32 @@ import (
 	"context"
 	"fmt"
 
-	"gopkg.in/gomail.v2"
+	//"gopkg.in/gomail.v2"
 
 	"Notification_Service/internal/interfaces/dto"
 )
 
-type NotifyWorker interface {
-	CreateNewMailNotify(ctx context.Context, notify dto.MailDate) error
-	CreateNewPhoneNotify(ctx context.Context, notify dto.PhoneDate) error
+type WorkerMail struct {
+	sender *SMTP
 }
 
-type NotifyWorkerUseCase struct {
-	SMTP *SMTP
+func NewWorkerMail(smtp *SMTP) *WorkerMail {
+	return &WorkerMail{sender: smtp}
 }
 
-func NewNotifyWorker(smtp *SMTP) *NotifyWorkerUseCase {
-	return &NotifyWorkerUseCase{SMTP: smtp}
-}
+func (uc *WorkerMail) SendMailLetter(ctx context.Context, notify dto.MailDate) error {
+	//m := gomail.NewMessage()
+	//
+	//m.SetHeader("From", uc.sender.Params.Username)
+	//m.SetHeader("To", notify.Mail)
+	//m.SetHeader("Subject", notify.Subject)
+	//m.SetBody("text/html", notify.Body)
+	//
+	//if err := uc.sender.Dialer.DialAndSend(m); err != nil {
+	//	return fmt.Errorf("smtp - NotifyWorkerUseCase - CreateNewMailNotify - uc.SMTP.Dialer.DialAndSend: %w", err)
+	//}
 
-func (uc *NotifyWorkerUseCase) CreateNewMailNotify(ctx context.Context, notify dto.MailDate) error {
-	m := gomail.NewMessage()
-
-	m.SetHeader("From", uc.SMTP.Params.Username)
-	m.SetHeader("To", notify.Mail)
-	m.SetHeader("Subject", notify.Subject)
-	m.SetBody("text/html", notify.Body)
-
-	if err := uc.SMTP.Dialer.DialAndSend(m); err != nil {
-		return fmt.Errorf("smtp - NotifyWorkerUseCase - CreateNewMailNotify - uc.SMTP.Dialer.DialAndSend: %w", err)
-	}
-
-	return nil
-}
-
-func (uc *NotifyWorkerUseCase) CreateNewPhoneNotify(ctx context.Context, notify dto.PhoneDate) error {
-	// TODO Send message on phone
-
-	fmt.Println("SEND MESSAGE ON PHONE: ", notify)
+	fmt.Println("SEND MESSAGE ON MAIL: ", notify)
 
 	return nil
 }

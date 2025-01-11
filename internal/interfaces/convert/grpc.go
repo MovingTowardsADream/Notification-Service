@@ -31,20 +31,23 @@ func SendMessageReqToReqNotification(req *notifyv1.SendMessageReq) (*dto.ReqNoti
 }
 
 func EditPreferencesReqToUserPreferences(req *notifyv1.EditPreferencesReq) *dto.UserPreferences {
+	if req == nil {
+		return nil
+	}
+
 	preferences := &dto.UserPreferences{
-		UserID:      req.UserID,
-		Preferences: dto.Preferences{},
+		UserID: req.UserID,
 	}
 
 	if req.Preferences.Mail != nil {
 		preferences.Preferences.Mail = &dto.MailPreference{
-			Approval: req.Preferences.Mail.Approval,
+			Approval: req.GetPreferences().GetMail().GetApproval(),
 		}
 	}
 
 	if req.Preferences.Phone != nil {
 		preferences.Preferences.Phone = &dto.PhonePreference{
-			Approval: req.Preferences.Phone.Approval,
+			Approval: req.GetPreferences().GetPhone().GetApproval(),
 		}
 	}
 

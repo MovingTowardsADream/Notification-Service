@@ -68,7 +68,7 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	phoneSenderClient := cltwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)
 
-	_ = phoneSenderClient
+	senderPhone := cltwilio.NewWorkerPhone(phoneSenderClient)
 
 	smtpClient := smtp.New(
 		smtp.Params{
@@ -79,9 +79,9 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		smtp.Port(cfg.SMTP.Port),
 	)
 
-	workerUseCase := smtp.NewNotifyWorker(smtpClient)
+	mailWorker := smtp.NewWorkerMail(smtpClient)
 
-	rmqRouter := amqprpc.NewRouter(workerUseCase)
+	rmqRouter := amqprpc.NewRouter(mailWorker, senderPhone)
 
 	mesServer, err := rmqserver.New(
 		cfg.Messaging.URL,
