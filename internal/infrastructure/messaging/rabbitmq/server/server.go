@@ -83,7 +83,7 @@ func (s *Server) topicConsume(deliveryChan <-chan amqp.Delivery) {
 			return
 		case d, opened := <-deliveryChan:
 			if !opened {
-				s.logger.Warn("Channel for topic %s closed. Reconnecting...", d.Type)
+				s.logger.Warn("channel for topic closed. reconnecting...", logger.NewStrArgs("topic", d.Type))
 				s.reconnect()
 				return
 			}
@@ -133,7 +133,7 @@ func (s *Server) republish(corrID, handler string, priority uint8, request any) 
 func (s *Server) serveCall(d *amqp.Delivery) {
 	callHandler, ok := s.router[d.Type]
 	if !ok {
-		s.logger.Error("No handlers found for topic: %s", d.Type)
+		s.logger.Error("no handlers found for topic", logger.NewStrArgs("topic", d.Type))
 		return
 	}
 	response, err := callHandler(d)
@@ -142,7 +142,13 @@ func (s *Server) serveCall(d *amqp.Delivery) {
 		count := s.getMistake(d.CorrelationId)
 		if count >= 3 {
 			s.deleteMistake(d.CorrelationId)
-			s.logger.Error("Max retry limit reached for message: %s", d.CorrelationId)
+			s.logger.Error(
+				"max retry limit reached for message",
+				logger.NewStrArgs("id", d.CorrelationId),
+				logger.NewStrArgs("topic", d.Type),
+				logger.NewIntArgs("mistakes", count),
+			)
+
 			return
 		}
 

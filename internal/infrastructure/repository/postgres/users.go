@@ -2,12 +2,8 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
-
-	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -45,10 +41,7 @@ func (ur *UsersRepo) GetUserCommunication(
 		&userCommunication.PhonePref,
 	)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return nil, repoerr.ErrNotFound
-		}
-		return nil, fmt.Errorf("NotifyRepo.GetUserCommunication - r.Pool.QueryRow: %v", err)
+		return nil, fmt.Errorf("NotifyRepo.GetUserCommunication - r.Pool.QueryRow: %w", mappingErrors(err))
 	}
 
 	return &userCommunication, nil
@@ -57,7 +50,7 @@ func (ur *UsersRepo) GetUserCommunication(
 func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
 	tx, err := ur.storage.Pool.Begin(ctx)
 	if err != nil {
-		return fmt.Errorf("UsersRepo.EditPreferences - r.Pool.Begin: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - r.Pool.Begin: %w", mappingErrors(err))
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -70,10 +63,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	var emailNotify, phoneNotify bool
 	err = tx.QueryRow(ctx, sql, args...).Scan(&emailNotify, &phoneNotify)
 	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			return repoerr.ErrNotFound
-		}
-		return fmt.Errorf("UsersRepo.EditPreferences - tx.QueryRow: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - tx.QueryRow: %w", mappingErrors(err))
 	}
 
 	if preferences.Preferences.Mail == nil {
@@ -96,12 +86,12 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 
 	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
-		return fmt.Errorf("UsersRepo.EditPreferences - tx.Exec: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - tx.Exec: %w", mappingErrors(err))
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
-		return fmt.Errorf("UsersRepo.EditPreferences - tx.Commit: %v", err)
+		return fmt.Errorf("UsersRepo.EditPreferences - tx.Commit: %w", mappingErrors(err))
 	}
 
 	return nil

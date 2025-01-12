@@ -3,6 +3,7 @@ package logger
 import (
 	"log/slog"
 	"os"
+	"time"
 
 	multihandler "Notification_Service/pkg/logger/multi_handler"
 )
@@ -13,32 +14,9 @@ const (
 	_envProd    = "prod"
 )
 
-type ExtendedLoggerParams interface {
-	With(args ...any) *slog.Logger
-}
-
-type DefaultLoggerFunc interface {
-	Debug(msg string, args ...any)
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-	Error(msg string, args ...any)
-}
-
-type DefaultLogger interface {
-	DefaultLoggerFunc
-	ExtendedLoggerParams
-}
-
 type Logger struct {
-	DefaultLogger
+	*slog.Logger
 	logFile *os.File
-}
-
-func (l *Logger) Err(err error) slog.Attr {
-	return slog.Attr{
-		Key:   "error",
-		Value: slog.StringValue(err.Error()),
-	}
 }
 
 func Setup(env string, filePath *string) (*Logger, error) {
@@ -74,9 +52,37 @@ func Setup(env string, filePath *string) (*Logger, error) {
 	}
 
 	return &Logger{
-		DefaultLogger: log,
-		logFile:       file,
+		Logger:  log,
+		logFile: file,
 	}, nil
+}
+
+func (l *Logger) Err(err error) slog.Attr {
+	return slog.Attr{
+		Key:   "error",
+		Value: slog.StringValue(err.Error()),
+	}
+}
+
+func NewStrArgs(name, value string) slog.Attr {
+	return slog.Attr{
+		Key:   name,
+		Value: slog.StringValue(value),
+	}
+}
+
+func NewIntArgs(name string, value int) slog.Attr {
+	return slog.Attr{
+		Key:   name,
+		Value: slog.IntValue(value),
+	}
+}
+
+func NewDurationArgs(name string, value time.Duration) slog.Attr {
+	return slog.Attr{
+		Key:   name,
+		Value: slog.StringValue(value.String()),
+	}
 }
 
 func (l *Logger) Close() error {

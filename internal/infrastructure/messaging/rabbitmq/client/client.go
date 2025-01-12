@@ -95,6 +95,8 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 			return ErrConnectionClosed
 		default:
 		}
+	case <-ctx.Done():
+		return ctx.Err()
 	default:
 	}
 

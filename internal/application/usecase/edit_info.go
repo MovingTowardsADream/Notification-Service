@@ -40,7 +40,11 @@ func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.Use
 			return ErrTimeout
 		}
 
-		e.l.Error("EditUserPreferences - e.usersDataPref.EditPreferences: ", e.l.Err(err))
+		e.l.Error(
+			"EditUserPreferences - e.usersDataPref.EditPreferences",
+			e.l.Err(err),
+			logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
+		)
 
 		return err
 	}

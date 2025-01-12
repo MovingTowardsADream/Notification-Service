@@ -50,7 +50,11 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 			return ErrTimeout
 		}
 
-		n.l.Error("SendNotifyForUsers - n.usersDataComm.GetUserCommunication: ", n.l.Err(err))
+		n.l.Error(
+			"SendNotifyForUsers - n.usersDataComm.GetUserCommunication",
+			n.l.Err(err),
+			logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
+		)
 
 		return err
 	}
