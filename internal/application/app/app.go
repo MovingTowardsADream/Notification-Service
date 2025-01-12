@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"Notification_Service/internal/application/usecase"
-	smtp2 "Notification_Service/internal/infrastructure/clients/smtp"
+	"Notification_Service/internal/infrastructure/clients/smtp"
 	cltwilio "Notification_Service/internal/infrastructure/clients/twilio"
 	"Notification_Service/internal/infrastructure/config"
 	gwmessaging "Notification_Service/internal/infrastructure/gateway/messaging"
@@ -70,16 +70,16 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	senderPhone := cltwilio.NewWorkerPhone(phoneSenderClient)
 
-	smtpClient := smtp2.New(
-		smtp2.Params{
+	smtpClient := smtp.New(
+		smtp.Params{
 			Domain:   cfg.Domain,
 			Username: cfg.UserName,
 			Password: cfg.Password,
 		},
-		smtp2.Port(cfg.SMTP.Port),
+		smtp.Port(cfg.SMTP.Port),
 	)
 
-	mailWorker := smtp2.NewWorkerMail(smtpClient)
+	mailWorker := smtp.NewWorkerMail(smtpClient)
 
 	rmqRouter := amqprpc.NewRouter(mailWorker, senderPhone)
 
