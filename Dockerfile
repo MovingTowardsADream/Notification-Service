@@ -11,8 +11,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o notify ./cmd/notify/main.go
 
 FROM scratch as final
 
-MAINTAINER Matvet Smirnov "MovingTowardsADream"
-
 LABEL maintainer="MovingTowardsADream"
 LABEL version="v1.0.0"
 LABEL description="This is notification service"
