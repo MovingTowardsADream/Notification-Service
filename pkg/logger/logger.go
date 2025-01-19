@@ -41,11 +41,11 @@ func Setup(env string, filePath *string) (*Logger, error) {
 		)
 	case _envTesting:
 		log = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
 	case _envProd:
 		log = slog.New(
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
 	default:
 		return nil, ErrUnknownEnv
@@ -55,6 +55,13 @@ func Setup(env string, filePath *string) (*Logger, error) {
 		Logger:  log,
 		logFile: file,
 	}, nil
+}
+
+func (l *Logger) Close() error {
+	if l.logFile != nil {
+		return l.logFile.Close()
+	}
+	return nil
 }
 
 func (l *Logger) Err(err error) slog.Attr {
@@ -83,11 +90,4 @@ func NewDurationArgs(name string, value time.Duration) slog.Attr {
 		Key:   name,
 		Value: slog.StringValue(value.String()),
 	}
-}
-
-func (l *Logger) Close() error {
-	if l.logFile != nil {
-		return l.logFile.Close()
-	}
-	return nil
 }

@@ -6,11 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-
-	"Notification_Service/internal/infrastructure/config"
-	"Notification_Service/pkg/logger"
 )
 
 type TestContextKey string
@@ -22,17 +18,13 @@ type BaseSuite struct {
 	Name       string
 	ctx        context.Context
 	TestCtx    context.Context
-	mockServer *MockServer
-	repo       Repository
+	MockServer *MockServer
+	Repo       Repository
 	cancel     func()
 }
 
 func (s *BaseSuite) SetupSuite() {
-	cfg := config.MustLoad()
-	log, err := logger.Setup(cfg.Log.Level, cfg.Log.Path)
-	assert.NoError(s.T(), err)
-
-	_ = log
+	s.ctx, s.MockServer, s.Repo, s.cancel = SetupMocks(context.Background(), s.Name)
 }
 
 func (s *BaseSuite) TearDownSuite() {

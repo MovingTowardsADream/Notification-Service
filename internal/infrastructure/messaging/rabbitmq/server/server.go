@@ -37,6 +37,8 @@ type Server struct {
 
 	rw       sync.RWMutex
 	mistakes map[string]int
+
+	once sync.Once
 }
 
 func New(url, serverExchange string, topics []string, router map[string]CallHandler, l *logger.Logger, opts ...Option) (*Server, error) {
@@ -83,8 +85,14 @@ func (s *Server) topicConsume(deliveryChan <-chan amqp.Delivery) {
 			return
 		case d, opened := <-deliveryChan:
 			if !opened {
-				s.logger.Warn("channel for topic closed. reconnecting...", logger.NewStrArgs("topic", d.Type))
-				s.reconnect()
+				s.once.Do(
+					func() {
+						go func() {
+							s.logger.Warn("channel for topic closed. reconnecting...", logger.NewStrArgs("topic", d.Type))
+							s.reconnect()
+						}()
+					},
+				)
 				return
 			}
 
@@ -199,6 +207,7 @@ func (s *Server) reconnect() {
 	}
 
 	s.stop = make(chan struct{})
+	s.once = sync.Once{}
 
 	go s.consumer()
 }

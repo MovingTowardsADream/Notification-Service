@@ -86,12 +86,27 @@ func (c *Client) publish(corrID, handler string, priority models.NotifyType, req
 	return nil
 }
 
+func (c *Client) reconnect() {
+	close(c.stop)
+
+	err := c.conn.AttemptConnect(c.conn.ConnectWriter())
+	if err != nil {
+		c.error <- err
+		close(c.error)
+
+		return
+	}
+
+	c.stop = make(chan struct{})
+}
+
 func (c *Client) RemoteCall(ctx context.Context, handler string, priority models.NotifyType, request any) error {
 	select {
 	case <-c.stop:
 		time.Sleep(c.timeout)
 		select {
 		case <-c.stop:
+			//c.reconnect()
 			return ErrConnectionClosed
 		default:
 		}

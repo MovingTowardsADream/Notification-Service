@@ -21,6 +21,34 @@ services:
       - 5672:5672
       - 15672:15672
 
+  loki:
+    image: grafana/loki:2.4.0
+    container_name: loki
+    ports:
+      - 3100:3100
+    volumes:
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
+  promtail:
+    image: grafana/promtail:2.4.0
+    container_name: promtail
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command:
+      - --config.file=/etc/promtail/config.yml
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: grafana
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    depends_on:
+      - loki
+
   app:
     build: .
     container_name: notify
@@ -32,6 +60,8 @@ services:
     depends_on:
       - postgres
       - rabbitmq
+      - loki
+      - grafana
 
 volumes:
   pg-data:

@@ -27,8 +27,13 @@ type RepositoryImpl struct {
 
 func NewRepository() (Repository, error) {
 	repo := &RepositoryImpl{}
+
 	repo.unitName = "notify_web"
 	repo.serviceName = "notify"
+	repo.config = config.MustLoad()
+
+	repo.clients = NewClients()
+	repo.storage = &postgres.Postgres{}
 
 	return repo, nil
 }
