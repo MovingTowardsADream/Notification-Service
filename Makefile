@@ -2,11 +2,11 @@ include .env
 
 .PHONY: compose-up
 compose-up:
-	docker compose up --build -d postgres rabbitmq
+	docker compose up --build -d postgres rabbitmq loki promtail grafana
 
 .PHONY: build
 build: compose-up
-	docker compose up --build
+	docker compose up --build -d
 
 .PHONY: compose-down
 compose-down:

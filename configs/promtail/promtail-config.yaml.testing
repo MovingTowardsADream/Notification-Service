@@ -9,11 +9,10 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  - job_name: system
+  - job_name: notify
     static_configs:
       - targets:
           - localhost
         labels:
-          job: system
-          host: localhost
-          __path__: /var/log/*.log
+          job: notify
+          __path__: /var/lib/docker/containers/*/*.log

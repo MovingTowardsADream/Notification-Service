@@ -26,6 +26,8 @@ For the application to work correctly, you must specify environment variables in
 
 `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_MESSAGING_SERVICE_SID` - parameters for the client sending SMS messages
 
+`GF_SECURITY_ADMIN_USER`, `GF_SECURITY_ADMIN_PASSWORD` - parameters for the Grafana
+
 `PG_URL` - link to connect to Postgresql.
 
 `RMQ_URL` - link to the rabbitmq queue.
