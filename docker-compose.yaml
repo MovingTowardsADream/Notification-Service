@@ -40,6 +40,18 @@ services:
     command:
       - --config.file=/etc/promtail/config.yml
 
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "3200:3200"
+    volumes:
+      - ./configs/tempo/tempo-config.yaml.prod:/etc/tempo.yaml
+      - ./tempo-data:/var/tempo
+    command:
+      - --config.file=/etc/tempo.yaml
+
   grafana:
     image: grafana/grafana:10.1.0
     container_name: grafana
@@ -49,6 +61,7 @@ services:
       - .env
     depends_on:
       - loki
+      - tempo
 
   notify:
     build: .
@@ -65,6 +78,7 @@ services:
       - rabbitmq
       - loki
       - promtail
+      - tempo
       - grafana
 
 volumes:
