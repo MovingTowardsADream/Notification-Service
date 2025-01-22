@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/streadway/amqp"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 
 	"Notification_Service/internal/domain/models"
 	rmqrpc "Notification_Service/internal/infrastructure/messaging/rabbitmq"
@@ -115,9 +117,17 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 	default:
 	}
 
+	tracer := otel.Tracer("MessageClient")
+	ctx, span := tracer.Start(ctx, "RemoteCall")
+	defer span.End()
+
 	corrID := uuid.New().String()
+
+	span.SetAttributes(attribute.String("message.queue.id", corrID))
+
 	err := c.publish(corrID, handler, priority, request)
 	if err != nil {
+		span.RecordError(err)
 		return fmt.Errorf("rmqrpc client - Client - RemoteCall - c.publish: %w", err)
 	}
 	return nil

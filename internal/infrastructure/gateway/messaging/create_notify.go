@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"go.opentelemetry.io/otel"
+
 	"Notification_Service/internal/domain/models"
 	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
@@ -22,6 +24,10 @@ func NewNotifyGateway(mes NotifyGatewayMessaging) *NotifyGateway {
 }
 
 func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.MailDate) error {
+	tracer := otel.Tracer("NotifyGateway")
+	ctx, span := tracer.Start(ctx, "CreateMailNotify")
+	defer span.End()
+
 	if mailNotify == nil {
 		return fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
 	}
@@ -38,8 +44,14 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.M
 }
 
 func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto.PhoneDate) error {
+	tracer := otel.Tracer("NotifyGateway")
+	ctx, span := tracer.Start(ctx, "CreatePhoneNotify")
+	defer span.End()
+
 	if phoneNotify == nil {
-		return fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
+		err := fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
+		span.RecordError(err)
+		return err
 	}
 
 	err := wrapper(ctx, func() error {
@@ -47,6 +59,7 @@ func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto
 	})
 
 	if err != nil {
+		span.RecordError(err)
 		return fmt.Errorf("NotifyGateway - CreateNotifyPhoneMessageOnRabbitMQ - gw.rmq.RemoteCall: %w", err)
 	}
 

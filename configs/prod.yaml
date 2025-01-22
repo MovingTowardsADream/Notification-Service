@@ -32,7 +32,7 @@ smtp:
 
 observability:
   trace:
-    port: 4317
+    port: "4317"
     retryConfig:
       enabled: true
       initialInterval: 500ms

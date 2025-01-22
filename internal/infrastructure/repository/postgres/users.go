@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -24,6 +27,12 @@ func (ur *UsersRepo) GetUserCommunication(
 	ctx context.Context,
 	communication *dto.IdentificationUserCommunication,
 ) (*dto.UserCommunication, error) {
+	tracer := otel.Tracer("UsersRepo")
+	ctx, span := tracer.Start(ctx, "GetUserCommunication")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("user.id", communication.ID))
+
 	sql, args, _ := ur.storage.Builder.
 		Select("users.id", "users.email", "users.phone", "notifications.email_notify", "notifications.phone_notify").
 		From(usersTable).
@@ -41,6 +50,7 @@ func (ur *UsersRepo) GetUserCommunication(
 		&userCommunication.PhonePref,
 	)
 	if err != nil {
+		span.RecordError(err)
 		return nil, fmt.Errorf("NotifyRepo.GetUserCommunication - r.Pool.QueryRow: %w", mappingErrors(err))
 	}
 
@@ -48,8 +58,15 @@ func (ur *UsersRepo) GetUserCommunication(
 }
 
 func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
+	tracer := otel.Tracer("UsersRepo")
+	ctx, span := tracer.Start(ctx, "EditPreferences")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("user.id", preferences.UserID))
+
 	tx, err := ur.storage.Pool.Begin(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return fmt.Errorf("UsersRepo.EditPreferences - r.Pool.Begin: %w", mappingErrors(err))
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
@@ -63,6 +80,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	var emailNotify, phoneNotify bool
 	err = tx.QueryRow(ctx, sql, args...).Scan(&emailNotify, &phoneNotify)
 	if err != nil {
+		span.RecordError(err)
 		return fmt.Errorf("UsersRepo.EditPreferences - tx.QueryRow: %w", mappingErrors(err))
 	}
 
@@ -86,11 +104,13 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 
 	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
+		span.RecordError(err)
 		return fmt.Errorf("UsersRepo.EditPreferences - tx.Exec: %w", mappingErrors(err))
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
+		span.RecordError(err)
 		return fmt.Errorf("UsersRepo.EditPreferences - tx.Commit: %w", mappingErrors(err))
 	}
 

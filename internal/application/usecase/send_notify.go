@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+
 	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
@@ -35,6 +38,12 @@ func NewNotifySender(l *logger.Logger, usersDataComm UsersDataCommunication, gat
 }
 
 func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNotification) error {
+	tracer := otel.Tracer("NotifySender")
+	ctx, span := tracer.Start(ctx, "SendToUser")
+	defer span.End()
+
+	span.SetAttributes(attribute.String("user.id", notifyRequest.UserID))
+
 	ctxTimeout, cancel := context.WithTimeout(ctx, _defaultTimeout)
 	defer cancel()
 
@@ -44,6 +53,8 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	)
 
 	if err != nil {
+		span.RecordError(err)
+
 		if errors.Is(err, repoerr.ErrNotFound) {
 			return ErrNotFound
 		} else if errors.Is(err, context.DeadlineExceeded) {
@@ -65,6 +76,8 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 		err = n.gateway.CreateMailNotify(ctxTimeout, mailNotify)
 
 		if err != nil {
+			span.RecordError(err)
+
 			return fmt.Errorf("SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
 		}
 	}
@@ -75,6 +88,8 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 		err = n.gateway.CreatePhoneNotify(ctxTimeout, phoneNotify)
 
 		if err != nil {
+			span.RecordError(err)
+
 			return fmt.Errorf("SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
 		}
 	}
