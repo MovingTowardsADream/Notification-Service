@@ -16,13 +16,14 @@ const (
 
 type (
 	Config struct {
-		App         `yaml:"app"`
-		GRPC        `yaml:"grpc"`
-		Storage     `yaml:"storage"`
-		Messaging   `yaml:"messaging"`
-		SMTP        `yaml:"smtp"`
-		PhoneSender `yaml:"phone_sender"`
-		Log         `yaml:"logger"`
+		App           `yaml:"app"`
+		GRPC          `yaml:"grpc"`
+		Storage       `yaml:"storage"`
+		Messaging     `yaml:"messaging"`
+		SMTP          `yaml:"smtp"`
+		PhoneSender   `yaml:"phone_sender"`
+		Observability `yaml:"observability"`
+		Log           `yaml:"logger"`
 	}
 
 	App struct {
@@ -77,6 +78,23 @@ type (
 		AccountSID          string `env:"TWILIO_ACCOUNT_SID" env-required:"true" yaml:"accountSID"`
 		AuthToken           string `env:"TWILIO_AUTH_TOKEN" env-required:"true" yaml:"authToken"`
 		MessagingServiceSID string `env:"TWILIO_MESSAGING_SERVICE_SID" env-required:"true" yaml:"messagingServiceSID"`
+	}
+
+	RetryConfig struct {
+		Enabled         bool          `yaml:"enabled"`
+		InitialInterval time.Duration `yaml:"initialInterval"`
+		MaxInterval     time.Duration `yaml:"maxInterval"`
+		MaxElapsedTime  time.Duration `yaml:"maxElapsedTime"`
+	}
+
+	Trace struct {
+		Host        string `env:"TRACE_PROVIDER_HOST" env-required:"true"`
+		Port        string `yaml:"port"`
+		RetryConfig `yaml:"retryConfig"`
+	}
+
+	Observability struct {
+		Trace `yaml:"trace"`
 	}
 
 	Log struct {

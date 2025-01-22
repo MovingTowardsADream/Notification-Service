@@ -26,7 +26,9 @@ func main() {
 		}
 	}()
 
-	application := app.New(context.Background(), log, cfg)
+	ctx := context.Background()
+
+	application := app.New(ctx, log, cfg)
 
 	go func() {
 		if errServ := application.Server.Run(); errServ != nil {
@@ -55,6 +57,10 @@ func main() {
 	application.Server.Shutdown()
 
 	application.Storage.Close()
+
+	if err := application.Tracer.Close(ctx); err != nil {
+		log.Error("tracer shutdown error", log.Err(err))
+	}
 
 	log.Info("gracefully stopped")
 }

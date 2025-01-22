@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 
 	"Notification_Service/internal/application/usecase"
 	"Notification_Service/internal/infrastructure/clients/smtp"
@@ -11,6 +12,7 @@ import (
 	"Notification_Service/internal/infrastructure/grpc"
 	rmqclient "Notification_Service/internal/infrastructure/messaging/rabbitmq/client"
 	rmqserver "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
+	"Notification_Service/internal/infrastructure/observ/trace"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
 	"Notification_Service/pkg/logger"
@@ -20,6 +22,7 @@ type App struct {
 	Server          *grpc.Server
 	MessagingServer *rmqserver.Server
 	Storage         *postgres.Postgres
+	Tracer          *trace.TracesProvider
 }
 
 func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
@@ -53,6 +56,20 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	if err != nil {
 		panic("messaging client connection error" + err.Error())
+	}
+
+	tracer, err := trace.New(
+		ctx,
+		formatAddress(cfg.Observability.Trace.Host, cfg.Observability.Trace.Port),
+		cfg.App.Name,
+		trace.Enabled(cfg.Observability.Trace.Enabled),
+		trace.InitialInterval(cfg.Observability.Trace.InitialInterval),
+		trace.MaxInterval(cfg.Observability.Trace.MaxInterval),
+		trace.MaxElapsedTime(cfg.Observability.Trace.MaxElapsedTime),
+	)
+
+	if err != nil {
+		panic("trace provider connection error" + err.Error())
 	}
 
 	usersRepo := postgres.NewUsersRepo(storage)
@@ -103,5 +120,10 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		Server:          gRPCServer,
 		MessagingServer: mesServer,
 		Storage:         storage,
+		Tracer:          tracer,
 	}
+}
+
+func formatAddress(host, port string) string {
+	return fmt.Sprintf("%s:%s", host, port)
 }
