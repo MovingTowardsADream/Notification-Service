@@ -59,6 +59,8 @@ services:
       - 3000:3000
     env_file:
       - .env
+    volumes:
+      - ./configs/grafana/data-sources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     depends_on:
       - loki
       - tempo
