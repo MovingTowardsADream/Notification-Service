@@ -89,7 +89,7 @@ type (
 
 	Trace struct {
 		Host        string `env:"TRACE_PROVIDER_HOST" env-required:"true"`
-		Port        string `yaml:"port"`
+		Port        int    `yaml:"port"`
 		RetryConfig `yaml:"retryConfig"`
 	}
 

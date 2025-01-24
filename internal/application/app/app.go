@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 
@@ -22,6 +21,7 @@ import (
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
 	"Notification_Service/pkg/logger"
+	"Notification_Service/pkg/utils"
 )
 
 type App struct {
@@ -66,7 +66,7 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 
 	tracer, err := trace.New(
 		ctx,
-		formatAddress(cfg.Observability.Trace.Host, cfg.Observability.Trace.Port),
+		utils.FormatAddress(cfg.Observability.Trace.Host, cfg.Observability.Trace.Port),
 		cfg.App.Name,
 		trace.Enabled(cfg.Observability.Trace.Enabled),
 		trace.InitialInterval(cfg.Observability.Trace.InitialInterval),
@@ -139,8 +139,4 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		Storage:         storage,
 		Tracer:          tracer,
 	}
-}
-
-func formatAddress(host, port string) string {
-	return fmt.Sprintf("%s:%s", host, port)
 }
