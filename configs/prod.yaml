@@ -14,7 +14,9 @@ storage:
   connTimeout: 1s
 
 messaging:
-  topics: ["phone_notify", "mail_notify"]
+  topics:
+    - "phone_notify"
+    - "mail_notify"
   server:
     rpcExchange: "rpc_server"
     goroutinesCount: 11
