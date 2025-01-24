@@ -52,6 +52,13 @@ services:
     command:
       - --config.file=/etc/tempo.yaml
 
+  prometheus:
+    image: prom/prometheus:v2.40.4
+    ports:
+      - 9090:9090
+    volumes:
+      - ./configs/prometheus/prometheus-config.yaml.prod:/etc/prometheus/prometheus.yml
+
   grafana:
     image: grafana/grafana:10.1.0
     container_name: grafana
@@ -64,6 +71,7 @@ services:
     depends_on:
       - loki
       - tempo
+      - prometheus
 
   notify:
     build: .
@@ -75,12 +83,14 @@ services:
       - .env
     ports:
       - 8080:8080
+      - 8081:8081
     depends_on:
       - postgres
       - rabbitmq
       - loki
       - promtail
       - tempo
+      - prometheus
       - grafana
 
 volumes:

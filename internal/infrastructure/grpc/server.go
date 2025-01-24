@@ -9,6 +9,7 @@ import (
 
 	"Notification_Service/internal/infrastructure/grpc/notify"
 	"Notification_Service/internal/infrastructure/grpc/users"
+	"Notification_Service/internal/infrastructure/observ/metrics"
 	"Notification_Service/internal/interfaces/middleware"
 	"Notification_Service/pkg/logger"
 )
@@ -23,7 +24,7 @@ type Server struct {
 	port       string
 }
 
-func New(log *logger.Logger, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
+func New(log *logger.Logger, m *metrics.Metrics, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
 	s := &Server{
 		log:  log,
 		port: _defaultPort,
@@ -33,12 +34,13 @@ func New(log *logger.Logger, notifySender notify.SendersNotify, editInfo users.E
 		opt(s)
 	}
 
-	mw := middleware.New(log)
+	mw := middleware.New(log, m)
 
 	gRPCServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			mw.LoggingInterceptor,
 			mw.RecoveryInterceptor,
+			mw.MetricInterceptor,
 		),
 	)
 

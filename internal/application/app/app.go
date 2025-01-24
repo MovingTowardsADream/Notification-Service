@@ -3,6 +3,11 @@ package app
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"Notification_Service/internal/application/usecase"
 	"Notification_Service/internal/infrastructure/clients/smtp"
@@ -12,6 +17,7 @@ import (
 	"Notification_Service/internal/infrastructure/grpc"
 	rmqclient "Notification_Service/internal/infrastructure/messaging/rabbitmq/client"
 	rmqserver "Notification_Service/internal/infrastructure/messaging/rabbitmq/server"
+	"Notification_Service/internal/infrastructure/observ/metrics"
 	"Notification_Service/internal/infrastructure/observ/trace"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
@@ -79,9 +85,20 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 	notifySender := usecase.NewNotifySender(l, usersRepo, gateway)
 	editInfo := usecase.NewEditInfo(l, usersRepo)
 
+	reg := prometheus.NewRegistry()
+	m := metrics.New(reg, cfg.App.Name)
+
 	gRPCServer := grpc.New(
-		l, notifySender, editInfo, grpc.Port(cfg.GRPC.Port),
+		l, m, notifySender, editInfo, grpc.Port(cfg.GRPC.Port),
 	)
+
+	pMux := http.NewServeMux()
+	promHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
+	pMux.Handle("/metrics", promHandler)
+
+	go func() {
+		log.Fatal(http.ListenAndServe(":8081", pMux))
+	}()
 
 	phoneSenderClient := cltwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)
 
