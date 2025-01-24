@@ -27,7 +27,7 @@ services:
     ports:
       - 3100:3100
     volumes:
-      - ./configs/loki/loki-config.yaml.prod:/etc/loki/local-config.yaml
+      - ${CONFIG_PATH}/loki/loki-config.yaml.${CONF_LEVEL}:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
 
   promtail:
@@ -36,7 +36,7 @@ services:
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers
       - /tmp:/tmp
-      - ./configs/promtail/promtail-config.yaml.prod:/etc/promtail/config.yml
+      - ${CONFIG_PATH}/promtail/promtail-config.yaml.${CONF_LEVEL}:/etc/promtail/config.yml
     command:
       - --config.file=/etc/promtail/config.yml
 
@@ -48,16 +48,17 @@ services:
       - 4318:4318
       - 3200:3200
     volumes:
-      - ./configs/tempo/tempo-config.yaml.prod:/etc/tempo.yaml
+      - ${CONFIG_PATH}/tempo/tempo-config.yaml.${CONF_LEVEL}:/etc/tempo.yaml
     command:
       - --config.file=/etc/tempo.yaml
 
   prometheus:
     image: prom/prometheus:v2.40.4
+    container_name: prometheus
     ports:
       - 9090:9090
     volumes:
-      - ./configs/prometheus/prometheus-config.yaml.prod:/etc/prometheus/prometheus.yml
+      - ${CONFIG_PATH}/prometheus/prometheus-config.yaml.${CONF_LEVEL}:/etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana:10.1.0
@@ -67,7 +68,7 @@ services:
     env_file:
       - .env
     volumes:
-      - ./configs/grafana/data-sources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - ${CONFIG_PATH}/grafana/data-sources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     depends_on:
       - loki
       - tempo

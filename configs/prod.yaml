@@ -40,6 +40,8 @@ observability:
       initialInterval: 500ms
       maxInterval: 5s
       maxElapsedTime: 1m
+  metrics:
+    port: 8081
 
 logger:
   logLevel: "prod"

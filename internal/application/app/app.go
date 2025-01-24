@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -97,7 +96,13 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 	pMux.Handle("/metrics", promHandler)
 
 	go func() {
-		log.Fatal(http.ListenAndServe(":8081", pMux))
+		l.Error(
+			"error listen promhttp server:",
+			http.ListenAndServe(
+				utils.FormatAddress("", cfg.Observability.Metrics.Port),
+				pMux,
+			),
+		)
 	}()
 
 	phoneSenderClient := cltwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)

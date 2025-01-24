@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -93,8 +94,13 @@ type (
 		RetryConfig `yaml:"retryConfig"`
 	}
 
+	Metrics struct {
+		Port int `yaml:"port"`
+	}
+
 	Observability struct {
-		Trace `yaml:"trace"`
+		Trace   `yaml:"trace"`
+		Metrics `yaml:"metrics"`
 	}
 
 	Log struct {
@@ -135,8 +141,12 @@ func fetchConfigPath() string {
 	flag.Parse()
 
 	if res == "" {
-		res = os.Getenv("CONFIG_PATH")
+		res = getMainConfigPath()
 	}
 
 	return res
+}
+
+func getMainConfigPath() string {
+	return fmt.Sprintf("%s/%s.yaml", os.Getenv("CONFIG_PATH"), os.Getenv("CONF_LEVEL"))
 }
