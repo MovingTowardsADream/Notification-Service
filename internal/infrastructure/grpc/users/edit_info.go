@@ -2,14 +2,12 @@ package users
 
 import (
 	"context"
-	"errors"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc"
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
-	"Notification_Service/internal/application/usecase"
 	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
 	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
@@ -29,8 +27,13 @@ func Users(gRPC *grpc.Server, editInfo EditInfo) {
 }
 
 func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPreferencesReq) (*notifyv1.EditPreferencesResp, error) {
-	tracer := otel.Tracer("userRoutes")
-	ctx, span := tracer.Start(ctx, "EditPreferences")
+	const (
+		tracerName = "userRoutes"
+		spanName   = "EditPreferences"
+	)
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", req.GetUserID()))
@@ -47,13 +50,7 @@ func (s *userRoutes) EditPreferences(ctx context.Context, req *notifyv1.EditPref
 	if err != nil {
 		span.RecordError(err)
 
-		if errors.Is(err, usecase.ErrTimeout) {
-			return nil, grpcerr.ErrDeadlineExceeded
-		} else if errors.Is(err, usecase.ErrNotFound) {
-			return nil, grpcerr.ErrNotFound
-		}
-
-		return nil, grpcerr.ErrInternalServer
+		return nil, grpcerr.MappingErrors(err)
 	}
 
 	return &notifyv1.EditPreferencesResp{

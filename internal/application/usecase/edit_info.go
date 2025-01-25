@@ -2,13 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
-	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
 )
@@ -34,8 +32,15 @@ func NewEditInfo(l *logger.Logger, usersDataPref UserPreferences) *EditInfo {
 }
 
 func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
-	tracer := otel.Tracer("EditInfo")
-	ctx, span := tracer.Start(ctx, "EditUserPreferences")
+	const op = "EditUserPreferences - e.usersDataPref.EditPreferences"
+
+	const (
+		tracerName = "EditInfo"
+		spanName   = "EditUserPreferences"
+	)
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", preferences.UserID))
@@ -45,14 +50,12 @@ func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.Use
 	if err != nil {
 		span.RecordError(err)
 
-		if errors.Is(err, repoerr.ErrNotFound) {
-			return ErrNotFound
-		} else if errors.Is(err, context.DeadlineExceeded) {
-			return ErrTimeout
+		if ok, err := mappingErrors(err); ok {
+			return err
 		}
 
 		e.l.Error(
-			"EditUserPreferences - e.usersDataPref.EditPreferences",
+			op,
 			e.l.Err(err),
 			logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
 		)

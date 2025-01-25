@@ -12,16 +12,17 @@ import (
 	"Notification_Service/internal/infrastructure/observ/metrics"
 	"Notification_Service/internal/interfaces/middleware"
 	"Notification_Service/pkg/logger"
+	"Notification_Service/pkg/utils"
 )
 
 const (
-	_defaultPort = ":8080"
+	_defaultPort = 8080
 )
 
 type Server struct {
 	gRPCServer *grpc.Server
 	log        *logger.Logger
-	port       string
+	port       int
 }
 
 func New(log *logger.Logger, m *metrics.Metrics, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
@@ -61,7 +62,7 @@ func (s *Server) MustRun() {
 func (s *Server) Run() error {
 	const op = "gRPC - Server.Run"
 
-	l, err := net.Listen("tcp", s.port)
+	l, err := net.Listen("tcp", utils.FormatAddress("", s.port))
 	if err != nil {
 		return fmt.Errorf("%s: %w", op, err)
 	}
@@ -78,7 +79,7 @@ func (s *Server) Run() error {
 func (s *Server) Shutdown() {
 	const op = "gRPC - Server.Shutdown"
 
-	s.log.With(slog.String("op", op)).Info("stopping gRPC server", slog.String("port", s.port))
+	s.log.With(slog.String("op", op)).Info("stopping gRPC server", slog.Int("port", s.port))
 
 	s.gRPCServer.GracefulStop()
 }

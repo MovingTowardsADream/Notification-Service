@@ -33,16 +33,18 @@ func newNotifyWorkerRoutes(routes map[string]rmqserver.CallHandler, sm SenderMai
 }
 
 func (r *notifyWorkerRoutes) createNewMailNotify() rmqserver.CallHandler {
+	const op = "amqp_rpc - createNewMailNotify"
+
 	return func(d *amqp.Delivery) (any, error) {
 		var request dto.MailDate
 
 		if err := json.Unmarshal(d.Body, &request); err != nil {
-			return nil, fmt.Errorf("amqp_rpc - notifyWorkerRoutes - createNewMailNotify - json.Unmarshal: %w", err)
+			return nil, fmt.Errorf("%s - json.Unmarshal: %w", op, err)
 		}
 
 		err := r.sm.SendMailLetter(context.Background(), request)
 		if err != nil {
-			return request, fmt.Errorf("amqp_rpc - notifyWorkerRoutes - createNewMailNotify - r.w.CreateNewNotify: %w", err)
+			return request, fmt.Errorf("%s - SendMailLetter: %w", op, err)
 		}
 
 		return nil, nil
@@ -50,16 +52,18 @@ func (r *notifyWorkerRoutes) createNewMailNotify() rmqserver.CallHandler {
 }
 
 func (r *notifyWorkerRoutes) createNewPhoneNotify() rmqserver.CallHandler {
+	const op = "amqp_rpc - createNewPhoneNotify"
+
 	return func(d *amqp.Delivery) (any, error) {
 		var request dto.PhoneDate
 
 		if err := json.Unmarshal(d.Body, &request); err != nil {
-			return nil, fmt.Errorf("amqp_rpc - notifyWorkerRoutes - createNewPhoneNotify - json.Unmarshal: %w", err)
+			return nil, fmt.Errorf("%s - json.Unmarshal: %w", op, err)
 		}
 
 		err := r.sp.SendPhoneSMS(context.Background(), request)
 		if err != nil {
-			return request, fmt.Errorf("amqp_rpc - notifyWorkerRoutes - createNewPhoneNotify - r.w.CreateNewNotify: %w", err)
+			return request, fmt.Errorf("%s - SendPhoneSMS: %w", op, err)
 		}
 
 		return nil, nil

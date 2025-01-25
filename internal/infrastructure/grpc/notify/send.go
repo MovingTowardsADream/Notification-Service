@@ -2,14 +2,12 @@ package notify
 
 import (
 	"context"
-	"errors"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"google.golang.org/grpc"
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
-	"Notification_Service/internal/application/usecase"
 	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
 	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
@@ -29,8 +27,13 @@ func Notify(gRPC *grpc.Server, notifySend SendersNotify) {
 }
 
 func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMessageReq) (*notifyv1.SendMessageResp, error) {
-	tracer := otel.Tracer("userRoutes")
-	ctx, span := tracer.Start(ctx, "SendMessage")
+	const (
+		tracerName = "userRoutes"
+		spanName   = "SendMessage"
+	)
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", req.GetUserID()))
@@ -52,13 +55,7 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 	if err != nil {
 		span.RecordError(err)
 
-		if errors.Is(err, usecase.ErrTimeout) {
-			return nil, grpcerr.ErrDeadlineExceeded
-		} else if errors.Is(err, usecase.ErrNotFound) {
-			return nil, grpcerr.ErrNotFound
-		}
-
-		return nil, grpcerr.ErrInternalServer
+		return nil, grpcerr.MappingErrors(err)
 	}
 
 	return &notifyv1.SendMessageResp{

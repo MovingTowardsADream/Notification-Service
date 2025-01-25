@@ -2,13 +2,11 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
-	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
@@ -38,8 +36,15 @@ func NewNotifySender(l *logger.Logger, usersDataComm UsersDataCommunication, gat
 }
 
 func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNotification) error {
-	tracer := otel.Tracer("NotifySender")
-	ctx, span := tracer.Start(ctx, "SendToUser")
+	const op = "SendNotifyForUsers"
+
+	const (
+		tracerName = "NotifySender"
+		spanName   = "SendToUser"
+	)
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", notifyRequest.UserID))
@@ -55,14 +60,12 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	if err != nil {
 		span.RecordError(err)
 
-		if errors.Is(err, repoerr.ErrNotFound) {
-			return ErrNotFound
-		} else if errors.Is(err, context.DeadlineExceeded) {
-			return ErrTimeout
+		if ok, err := mappingErrors(err); ok {
+			return err
 		}
 
 		n.l.Error(
-			"SendNotifyForUsers - n.usersDataComm.GetUserCommunication",
+			op,
 			n.l.Err(err),
 			logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
 		)
@@ -78,7 +81,7 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 		if err != nil {
 			span.RecordError(err)
 
-			return fmt.Errorf("SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
+			return fmt.Errorf("%s - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", op, err)
 		}
 	}
 
@@ -90,7 +93,7 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 		if err != nil {
 			span.RecordError(err)
 
-			return fmt.Errorf("SendNotifyForUser - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", err)
+			return fmt.Errorf("%s - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", op, err)
 		}
 	}
 

@@ -35,7 +35,7 @@ type (
 	}
 
 	GRPC struct {
-		Port    string        `env:"GRPC_PORT"    env-default:":8080" yaml:"port"`
+		Port    int           `env:"GRPC_PORT"    env-default:":8080" yaml:"port"`
 		Timeout time.Duration `env:"GRPC_TIMEOUT" env-default:"5s"    yaml:"timeout"`
 	}
 

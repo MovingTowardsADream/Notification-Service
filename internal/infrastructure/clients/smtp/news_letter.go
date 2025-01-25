@@ -17,7 +17,9 @@ func NewWorkerMail(smtp *SMTP) *WorkerMail {
 	return &WorkerMail{sender: smtp}
 }
 
-func (uc *WorkerMail) SendMailLetter(ctx context.Context, notify dto.MailDate) error {
+func (uc *WorkerMail) SendMailLetter(_ context.Context, notify dto.MailDate) error {
+	//const op = "smtp - SendMailLetter"
+	//
 	//m := gomail.NewMessage()
 	//
 	//m.SetHeader("From", uc.sender.Params.Username)
@@ -26,7 +28,7 @@ func (uc *WorkerMail) SendMailLetter(ctx context.Context, notify dto.MailDate) e
 	//m.SetBody("text/html", notify.Body)
 	//
 	//if err := uc.sender.Dialer.DialAndSend(m); err != nil {
-	//	return fmt.Errorf("smtp - NotifyWorkerUseCase - CreateNewMailNotify - uc.SMTP.Dialer.DialAndSend: %w", err)
+	//	return fmt.Errorf("%s - uc.sender.Dialer.DialAndSend: %w", op, err)
 	//}
 
 	fmt.Println("SEND MESSAGE ON MAIL: ", notify)

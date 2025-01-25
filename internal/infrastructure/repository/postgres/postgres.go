@@ -41,6 +41,8 @@ type Postgres struct {
 }
 
 func New(ctx context.Context, url string, opts ...Option) (*Postgres, error) {
+	const op = "postgres - New"
+
 	pg := &Postgres{
 		maxPoolSize:  defaultMaxPoolSize,
 		connAttempts: defaultConnAttempts,
@@ -55,7 +57,7 @@ func New(ctx context.Context, url string, opts ...Option) (*Postgres, error) {
 
 	poolConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
-		return nil, fmt.Errorf("postgres - NewPostgresDB - pgxpool.ParseConfig: %w", err)
+		return nil, fmt.Errorf("%s - pgxpool.ParseConfig: %w", op, err)
 	}
 
 	poolConfig.MaxConns = pg.maxPoolSize
@@ -71,7 +73,7 @@ func New(ctx context.Context, url string, opts ...Option) (*Postgres, error) {
 	}
 
 	if err != nil {
-		return nil, fmt.Errorf("postgres - NewPostgresDB - pgxpool.ConnectConfig: %w", err)
+		return nil, fmt.Errorf("%s - pgxpool.ConnectConfig: %w", op, err)
 	}
 
 	return pg, nil

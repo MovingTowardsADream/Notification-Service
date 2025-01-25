@@ -11,6 +11,8 @@ import (
 	"Notification_Service/internal/interfaces/dto"
 )
 
+const traceName = "NotifyGateway"
+
 type NotifyGatewayMessaging interface {
 	RemoteCall(ctx context.Context, handler string, priority models.NotifyType, request any) error
 }
@@ -24,12 +26,15 @@ func NewNotifyGateway(mes NotifyGatewayMessaging) *NotifyGateway {
 }
 
 func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.MailDate) error {
-	tracer := otel.Tracer("NotifyGateway")
-	ctx, span := tracer.Start(ctx, "CreateMailNotify")
+	const op = "NotifyGateway - CreateMailNotify"
+	const spanName = "CreateMailNotify"
+
+	tracer := otel.Tracer(traceName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	if mailNotify == nil {
-		return fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
+		return fmt.Errorf("%s - notify is nil", op)
 	}
 
 	err := wrapper(ctx, func() error {
@@ -37,19 +42,22 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.M
 	})
 
 	if err != nil {
-		return fmt.Errorf("NotifyGateway - CreateNotifyMailMessageOnRabbitMQ - gw.rmq.RemoteCall: %w", err)
+		return fmt.Errorf("%s - gw.rmq.RemoteCall: %w", op, err)
 	}
 
 	return nil
 }
 
 func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto.PhoneDate) error {
-	tracer := otel.Tracer("NotifyGateway")
-	ctx, span := tracer.Start(ctx, "CreatePhoneNotify")
+	const op = "NotifyGateway - CreatePhoneNotify"
+	const spanName = "CreatePhoneNotify"
+
+	tracer := otel.Tracer(traceName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	if phoneNotify == nil {
-		err := fmt.Errorf("NotifyGateway - CreateMailNotify - notify is nil")
+		err := fmt.Errorf("%s - notify is nil", op)
 		span.RecordError(err)
 		return err
 	}
@@ -60,7 +68,7 @@ func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto
 
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("NotifyGateway - CreateNotifyPhoneMessageOnRabbitMQ - gw.rmq.RemoteCall: %w", err)
+		return fmt.Errorf("%s - gw.rmq.RemoteCall: %w", op, err)
 	}
 
 	return nil

@@ -15,6 +15,8 @@ const (
 	notifyTable = "notifications"
 )
 
+const tracerName = "userRepo"
+
 type UsersRepo struct {
 	storage *Postgres
 }
@@ -27,8 +29,11 @@ func (ur *UsersRepo) GetUserCommunication(
 	ctx context.Context,
 	communication *dto.IdentificationUserCommunication,
 ) (*dto.UserCommunication, error) {
-	tracer := otel.Tracer("UsersRepo")
-	ctx, span := tracer.Start(ctx, "GetUserCommunication")
+	const op = "NotifyRepo.GetUserCommunication"
+	const spanName = "GetUserCommunication"
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", communication.ID))
@@ -51,15 +56,18 @@ func (ur *UsersRepo) GetUserCommunication(
 	)
 	if err != nil {
 		span.RecordError(err)
-		return nil, fmt.Errorf("NotifyRepo.GetUserCommunication - r.Pool.QueryRow: %w", mappingErrors(err))
+		return nil, fmt.Errorf("%s - r.Pool.QueryRow: %w", op, mappingErrors(err))
 	}
 
 	return &userCommunication, nil
 }
 
 func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
-	tracer := otel.Tracer("UsersRepo")
-	ctx, span := tracer.Start(ctx, "EditPreferences")
+	const op = "UsersRepo.EditPreferences"
+	const spanName = "EditPreferences"
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", preferences.UserID))
@@ -67,7 +75,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	tx, err := ur.storage.Pool.Begin(ctx)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("UsersRepo.EditPreferences - r.Pool.Begin: %w", mappingErrors(err))
+		return fmt.Errorf("%s - r.Pool.Begin: %w", op, mappingErrors(err))
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -81,7 +89,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	err = tx.QueryRow(ctx, sql, args...).Scan(&emailNotify, &phoneNotify)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("UsersRepo.EditPreferences - tx.QueryRow: %w", mappingErrors(err))
+		return fmt.Errorf("%s - tx.QueryRow: %w", op, mappingErrors(err))
 	}
 
 	if preferences.Preferences.Mail == nil {
@@ -105,13 +113,13 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("UsersRepo.EditPreferences - tx.Exec: %w", mappingErrors(err))
+		return fmt.Errorf("%s - tx.Exec: %w", op, mappingErrors(err))
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("UsersRepo.EditPreferences - tx.Commit: %w", mappingErrors(err))
+		return fmt.Errorf("%s - tx.Commit: %w", op, mappingErrors(err))
 	}
 
 	return nil
