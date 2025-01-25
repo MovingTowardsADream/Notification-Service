@@ -32,7 +32,7 @@ func NewEditInfo(l *logger.Logger, usersDataPref UserPreferences) *EditInfo {
 }
 
 func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
-	const op = "EditUserPreferences - e.usersDataPref.EditPreferences"
+	const op = "EditInfo - EditUserPreferences"
 
 	const (
 		tracerName = "EditInfo"

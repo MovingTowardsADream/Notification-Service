@@ -31,6 +31,12 @@ func main() {
 	application := app.New(ctx, log, cfg)
 
 	go func() {
+		if errServ := application.MetricsServer.Run(); errServ != nil {
+			log.Error("server with metrics was shut down due to an error: ", log.Err(errServ))
+		}
+	}()
+
+	go func() {
 		if errServ := application.Server.Run(); errServ != nil {
 			log.Error("server was shut down due to an error: ", log.Err(errServ))
 		}
@@ -60,6 +66,10 @@ func main() {
 
 	if err := application.Tracer.Close(ctx); err != nil {
 		log.Error("tracer shutdown error", log.Err(err))
+	}
+
+	if err := application.MetricsServer.Shutdown(ctx); err != nil {
+		log.Error("metrics server shutdown error", log.Err(err))
 	}
 
 	log.Info("gracefully stopped")

@@ -2,10 +2,8 @@ package app
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"Notification_Service/internal/application/usecase"
 	"Notification_Service/internal/infrastructure/clients/smtp"
@@ -28,6 +26,7 @@ type App struct {
 	MessagingServer *rmqserver.Server
 	Storage         *postgres.Postgres
 	Tracer          *trace.TracesProvider
+	MetricsServer   *metrics.Server
 }
 
 func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
@@ -91,19 +90,11 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		l, m, notifySender, editInfo, grpc.Port(cfg.GRPC.Port),
 	)
 
-	pMux := http.NewServeMux()
-	promHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
-	pMux.Handle("/metrics", promHandler)
-
-	go func() {
-		l.Error(
-			"error listen promhttp server:",
-			http.ListenAndServe(
-				utils.FormatAddress("", cfg.Observability.Metrics.Port),
-				pMux,
-			),
-		)
-	}()
+	metricsServer := metrics.NewMetricsServer(
+		utils.FormatAddress("", cfg.Observability.Metrics.Port),
+		reg,
+		l,
+	)
 
 	phoneSenderClient := cltwilio.NewClient(cfg.PhoneSender.AccountSID, cfg.PhoneSender.AuthToken, cfg.PhoneSender.MessagingServiceSID)
 
@@ -143,5 +134,6 @@ func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
 		MessagingServer: mesServer,
 		Storage:         storage,
 		Tracer:          tracer,
+		MetricsServer:   metricsServer,
 	}
 }
