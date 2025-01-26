@@ -6,6 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 
 	"Notification_Service/internal/infrastructure/observ/metrics"
 )
@@ -24,12 +25,13 @@ func (lm *metricMiddlewares) MetricInterceptor(
 
 	resp, err := handler(ctx, req)
 
-	respStatus := "ok"
-	if err != nil {
-		respStatus = "failed"
+	var grpcCode string
+
+	if st, ok := status.FromError(err); ok {
+		grpcCode = st.Code().String()
 	}
 
-	lm.Duration.With(prometheus.Labels{"method": info.FullMethod, "status": respStatus}).Observe(time.Since(start).Seconds())
+	lm.Duration.With(prometheus.Labels{"method": info.FullMethod, "status": grpcCode}).Observe(time.Since(start).Seconds())
 
 	return resp, err
 }

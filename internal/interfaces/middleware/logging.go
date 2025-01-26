@@ -12,7 +12,7 @@ import (
 )
 
 type loggerMiddlewares struct {
-	*logger.Logger
+	logger.Logger
 }
 
 func (lm *loggerMiddlewares) LoggingInterceptor(
@@ -34,10 +34,10 @@ func (lm *loggerMiddlewares) LoggingInterceptor(
 	}
 
 	lm.Info("request end",
-		logger.NewStrArgs("method", info.FullMethod),
-		logger.NewStrArgs("status", grpcCode),
-		logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
-		logger.NewDurationArgs("duration", time.Since(start)),
+		logger.AnyAttr("method", info.FullMethod),
+		logger.AnyAttr("status", grpcCode),
+		logger.AnyAttr("trace-id", ctx.Value("trace-id").(string)),
+		logger.AnyAttr("duration", time.Since(start)),
 	)
 
 	return resp, err

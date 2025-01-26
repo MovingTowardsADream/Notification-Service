@@ -20,11 +20,11 @@ type UserPreferences interface {
 }
 
 type EditInfo struct {
-	l         *logger.Logger
+	l         logger.Logger
 	usersData UserPreferences
 }
 
-func NewEditInfo(l *logger.Logger, usersDataPref UserPreferences) *EditInfo {
+func NewEditInfo(l logger.Logger, usersDataPref UserPreferences) *EditInfo {
 	return &EditInfo{
 		l:         l,
 		usersData: usersDataPref,
@@ -57,7 +57,7 @@ func (e *EditInfo) EditUserPreferences(ctx context.Context, preferences *dto.Use
 		e.l.Error(
 			op,
 			e.l.Err(err),
-			logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
+			logger.AnyAttr("trace-id", ctx.Value("trace-id").(string)),
 		)
 
 		return err

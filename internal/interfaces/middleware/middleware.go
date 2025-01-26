@@ -11,7 +11,7 @@ type Middlewares struct {
 	metricMiddlewares
 }
 
-func New(l *logger.Logger, m *metrics.Metrics) *Middlewares {
+func New(l logger.Logger, m *metrics.Metrics) *Middlewares {
 	return &Middlewares{
 		recoverMiddlewares{l},
 		loggerMiddlewares{l},

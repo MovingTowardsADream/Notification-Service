@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"fmt"
-	"log/slog"
 	"net"
 
 	"google.golang.org/grpc"
@@ -21,11 +20,11 @@ const (
 
 type Server struct {
 	gRPCServer *grpc.Server
-	log        *logger.Logger
+	log        logger.Logger
 	port       int
 }
 
-func New(log *logger.Logger, m *metrics.Metrics, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
+func New(log logger.Logger, m *metrics.Metrics, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
 	s := &Server{
 		log:  log,
 		port: _defaultPort,
@@ -67,7 +66,7 @@ func (s *Server) Run() error {
 		return fmt.Errorf("%s: %w", op, err)
 	}
 
-	s.log.Info("gRPC server started", slog.String("addr", l.Addr().String()))
+	s.log.Info("gRPC server started", logger.AnyAttr("addr", l.Addr().String()))
 
 	if err := s.gRPCServer.Serve(l); err != nil {
 		return fmt.Errorf("%s: %w", op, err)
@@ -79,7 +78,7 @@ func (s *Server) Run() error {
 func (s *Server) Shutdown() {
 	const op = "gRPC - Server.Shutdown"
 
-	s.log.With(slog.String("op", op)).Info("stopping gRPC server", slog.Int("port", s.port))
+	s.log.Info("stopping gRPC server", logger.AnyAttr("port", s.port), logger.AnyAttr("op", op))
 
 	s.gRPCServer.GracefulStop()
 }

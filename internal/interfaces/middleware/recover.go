@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"log/slog"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
@@ -12,7 +11,7 @@ import (
 )
 
 type recoverMiddlewares struct {
-	*logger.Logger
+	logger.Logger
 }
 
 func (rm *recoverMiddlewares) RecoveryInterceptor(
@@ -23,7 +22,7 @@ func (rm *recoverMiddlewares) RecoveryInterceptor(
 ) (resp any, err error) {
 	defer func() {
 		if r := recover(); r != nil {
-			rm.Error("panic occurred: ", slog.Any("panic", r))
+			rm.Error("panic occurred: ", logger.AnyAttr("panic", r))
 			err = status.Errorf(codes.Internal, "panic occurred: %v", r)
 		}
 	}()

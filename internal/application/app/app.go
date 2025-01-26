@@ -29,7 +29,7 @@ type App struct {
 	MetricsServer   *metrics.Server
 }
 
-func New(ctx context.Context, l *logger.Logger, cfg *config.Config) *App {
+func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 	storage, err := postgres.New(
 		ctx,
 		cfg.Storage.URL,

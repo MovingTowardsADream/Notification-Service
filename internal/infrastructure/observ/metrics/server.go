@@ -2,7 +2,6 @@ package metrics
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -13,10 +12,10 @@ import (
 
 type Server struct {
 	httpServer *http.Server
-	l          *logger.Logger
+	l          logger.Logger
 }
 
-func NewMetricsServer(address string, reg *prometheus.Registry, l *logger.Logger) *Server {
+func NewMetricsServer(address string, reg *prometheus.Registry, l logger.Logger) *Server {
 	pMux := http.NewServeMux()
 	promHandler := promhttp.HandlerFor(reg, promhttp.HandlerOpts{})
 	pMux.Handle("/metrics", promHandler)
@@ -31,7 +30,7 @@ func NewMetricsServer(address string, reg *prometheus.Registry, l *logger.Logger
 }
 
 func (s *Server) Run() error {
-	s.l.Info("starting metrics server", slog.String("address", s.httpServer.Addr))
+	s.l.Info("starting metrics server", logger.AnyAttr("address", s.httpServer.Addr))
 	return s.httpServer.ListenAndServe()
 }
 

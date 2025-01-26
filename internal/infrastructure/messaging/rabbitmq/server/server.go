@@ -33,7 +33,7 @@ type Server struct {
 	timeout         time.Duration
 	goroutinesCount int
 
-	logger *logger.Logger
+	logger logger.Logger
 
 	rw       sync.RWMutex
 	mistakes map[string]int
@@ -41,7 +41,7 @@ type Server struct {
 	once sync.Once
 }
 
-func New(url, serverExchange string, topics []string, router map[string]CallHandler, l *logger.Logger, opts ...Option) (*Server, error) {
+func New(url, serverExchange string, topics []string, router map[string]CallHandler, l logger.Logger, opts ...Option) (*Server, error) {
 	cfg := rmqrpc.Params{
 		URL:      url,
 		WaitTime: _defaultWaitTime,
@@ -88,7 +88,7 @@ func (s *Server) topicConsume(deliveryChan <-chan amqp.Delivery) {
 				s.once.Do(
 					func() {
 						go func() {
-							s.logger.Warn("channel for topic closed. reconnecting...", logger.NewStrArgs("topic", d.Type))
+							s.logger.Warn("channel for topic closed. reconnecting...", logger.AnyAttr("topic", d.Type))
 							s.reconnect()
 						}()
 					},
@@ -141,7 +141,7 @@ func (s *Server) republish(corrID, handler string, priority uint8, request any) 
 func (s *Server) serveCall(d *amqp.Delivery) {
 	callHandler, ok := s.router[d.Type]
 	if !ok {
-		s.logger.Error("no handlers found for topic", logger.NewStrArgs("topic", d.Type))
+		s.logger.Error("no handlers found for topic", logger.AnyAttr("topic", d.Type))
 		return
 	}
 	response, err := callHandler(d)
@@ -152,9 +152,9 @@ func (s *Server) serveCall(d *amqp.Delivery) {
 			s.deleteMistake(d.CorrelationId)
 			s.logger.Error(
 				"max retry limit reached for message",
-				logger.NewStrArgs("id", d.CorrelationId),
-				logger.NewStrArgs("topic", d.Type),
-				logger.NewIntArgs("mistakes", count),
+				logger.AnyAttr("id", d.CorrelationId),
+				logger.AnyAttr("topic", d.Type),
+				logger.AnyAttr("mistakes", count),
 			)
 
 			return

@@ -3,7 +3,6 @@ package logger
 import (
 	"log/slog"
 	"os"
-	"time"
 
 	multihandler "Notification_Service/pkg/logger/multi_handler"
 )
@@ -14,12 +13,42 @@ const (
 	_envProd    = "prod"
 )
 
-type Logger struct {
-	*slog.Logger
+type Manager interface {
+	Close() error
+}
+
+type Attr struct {
+	Key   string
+	Value any
+}
+
+func AnyAttr(key string, value any) Attr {
+	return Attr{Key: key, Value: value}
+}
+
+type HandlingLogger interface {
+	Err(err error) Attr
+}
+
+type DefaultLogger interface {
+	Info(msg string, attrs ...Attr)
+	Error(msg string, attrs ...Attr)
+	Debug(msg string, attrs ...Attr)
+	Warn(msg string, attrs ...Attr)
+}
+
+type Logger interface {
+	DefaultLogger
+	HandlingLogger
+	Manager
+}
+
+type LogData struct {
+	log     *slog.Logger
 	logFile *os.File
 }
 
-func Setup(env string, filePath *string) (*Logger, error) {
+func Setup(env string, filePath *string) (Logger, error) {
 	var log *slog.Logger
 	var file *os.File
 
@@ -51,43 +80,52 @@ func Setup(env string, filePath *string) (*Logger, error) {
 		return nil, ErrUnknownEnv
 	}
 
-	return &Logger{
-		Logger:  log,
+	return &LogData{
+		log:     log,
 		logFile: file,
 	}, nil
 }
 
-func (l *Logger) Close() error {
+func (l *LogData) Info(msg string, attrs ...Attr) {
+	l.log.Info(msg, convertAttrs(attrs)...)
+}
+
+func (l *LogData) Error(msg string, attrs ...Attr) {
+	l.log.Error(msg, convertAttrs(attrs)...)
+}
+
+func (l *LogData) Debug(msg string, attrs ...Attr) {
+	l.log.Debug(msg, convertAttrs(attrs)...)
+}
+
+func (l *LogData) Warn(msg string, attrs ...Attr) {
+	l.log.Warn(msg, convertAttrs(attrs)...)
+}
+
+func convertAttrs(attrs []Attr) []any {
+	slogAttrs := make([]any, len(attrs))
+	for i, attr := range attrs {
+		slogAttrs[i] = slog.Any(attr.Key, attr.Value)
+	}
+	return slogAttrs
+}
+
+func (l *LogData) Err(err error) Attr {
+	var msgErr string
+
+	if err != nil {
+		msgErr = err.Error()
+	}
+
+	return Attr{
+		Key:   "error",
+		Value: msgErr,
+	}
+}
+
+func (l *LogData) Close() error {
 	if l.logFile != nil {
 		return l.logFile.Close()
 	}
 	return nil
-}
-
-func (l *Logger) Err(err error) slog.Attr {
-	return slog.Attr{
-		Key:   "error",
-		Value: slog.StringValue(err.Error()),
-	}
-}
-
-func NewStrArgs(name, value string) slog.Attr {
-	return slog.Attr{
-		Key:   name,
-		Value: slog.StringValue(value),
-	}
-}
-
-func NewIntArgs(name string, value int) slog.Attr {
-	return slog.Attr{
-		Key:   name,
-		Value: slog.IntValue(value),
-	}
-}
-
-func NewDurationArgs(name string, value time.Duration) slog.Attr {
-	return slog.Attr{
-		Key:   name,
-		Value: slog.StringValue(value.String()),
-	}
 }

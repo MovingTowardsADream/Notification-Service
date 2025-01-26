@@ -22,12 +22,12 @@ type NotifyGateway interface {
 }
 
 type NotifySender struct {
-	l             *logger.Logger
+	l             logger.Logger
 	usersDataComm UsersDataCommunication
 	gateway       NotifyGateway
 }
 
-func NewNotifySender(l *logger.Logger, usersDataComm UsersDataCommunication, gateway NotifyGateway) *NotifySender {
+func NewNotifySender(l logger.Logger, usersDataComm UsersDataCommunication, gateway NotifyGateway) *NotifySender {
 	return &NotifySender{
 		l:             l,
 		usersDataComm: usersDataComm,
@@ -67,7 +67,7 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 		n.l.Error(
 			op,
 			n.l.Err(err),
-			logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
+			logger.AnyAttr("trace-id", ctx.Value("trace-id").(string)),
 		)
 
 		return err
