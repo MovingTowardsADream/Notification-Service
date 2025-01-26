@@ -3,7 +3,9 @@ package rmqclient
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,9 +31,13 @@ type Client struct {
 
 	error chan error
 	stop  chan struct{}
+
+	once sync.Once
 }
 
 func New(url, serverExchange, clientExchange string, topics []string, opts ...Option) (*Client, error) {
+	const op = "rmq_client - New"
+
 	cfg := rmqrpc.Params{
 		URL:      url,
 		WaitTime: _defaultWaitTime,
@@ -52,7 +58,7 @@ func New(url, serverExchange, clientExchange string, topics []string, opts ...Op
 
 	err := c.conn.AttemptConnect(c.conn.ConnectWriter())
 	if err != nil {
-		return nil, fmt.Errorf("rmqrpc client - NewClient - c.conn.AttemptConnect: %w", err)
+		return nil, fmt.Errorf("%s - c.conn.AttemptConnect: %w", op, err)
 	}
 
 	return c, nil
@@ -110,7 +116,6 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 		time.Sleep(c.timeout)
 		select {
 		case <-c.stop:
-			//c.reconnect()
 			return ErrConnectionClosed
 		default:
 		}
@@ -128,8 +133,22 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 	span.SetAttributes(attribute.String("message.queue.id", corrID))
 
 	err := c.publish(corrID, handler, priority, request)
+
 	if err != nil {
 		span.RecordError(err)
+
+		unwrappedErr := errors.Unwrap(err)
+
+		if amqpErr, ok := unwrappedErr.(*amqp.Error); ok {
+			if amqpErr.Code == amqp.ChannelError || amqpErr.Code == amqp.ConnectionForced {
+				go func() {
+					c.once.Do(func() { c.reconnect() })
+					time.Sleep(c.timeout)
+					c.once = sync.Once{}
+				}()
+			}
+		}
+
 		return fmt.Errorf("%s - c.publish: %w", op, err)
 	}
 	return nil
