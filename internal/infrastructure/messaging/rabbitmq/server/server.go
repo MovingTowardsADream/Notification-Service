@@ -172,6 +172,23 @@ func (s *Server) serveCall(d *amqp.Delivery) {
 	s.deleteMistake(d.CorrelationId)
 }
 
+func (s *Server) reconnect() {
+	close(s.stop)
+
+	err := s.conn.AttemptConnect(s.conn.ConnectReader())
+	if err != nil {
+		s.error <- err
+		close(s.error)
+
+		return
+	}
+
+	s.stop = make(chan struct{})
+	s.once = sync.Once{}
+
+	go s.consumer()
+}
+
 func (s *Server) getMistake(corrID string) int {
 	s.rw.RLock()
 	count, ok := s.mistakes[corrID]
@@ -193,23 +210,6 @@ func (s *Server) deleteMistake(corrID string) {
 	s.rw.Lock()
 	delete(s.mistakes, corrID)
 	s.rw.Unlock()
-}
-
-func (s *Server) reconnect() {
-	close(s.stop)
-
-	err := s.conn.AttemptConnect(s.conn.ConnectReader())
-	if err != nil {
-		s.error <- err
-		close(s.error)
-
-		return
-	}
-
-	s.stop = make(chan struct{})
-	s.once = sync.Once{}
-
-	go s.consumer()
 }
 
 func (s *Server) Notify() <-chan error {

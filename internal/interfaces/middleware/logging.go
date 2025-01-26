@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 
 	"Notification_Service/pkg/logger"
 )
@@ -26,14 +27,15 @@ func (lm *loggerMiddlewares) LoggingInterceptor(
 
 	resp, err := handler(ctx, req)
 
-	respStatus := "ok"
-	if err != nil {
-		respStatus = "failed"
+	var grpcCode string
+
+	if st, ok := status.FromError(err); ok {
+		grpcCode = st.Code().String()
 	}
 
 	lm.Info("request end",
 		logger.NewStrArgs("method", info.FullMethod),
-		logger.NewStrArgs("status", respStatus),
+		logger.NewStrArgs("status", grpcCode),
 		logger.NewStrArgs("trace-id", ctx.Value("trace-id").(string)),
 		logger.NewDurationArgs("duration", time.Since(start)),
 	)

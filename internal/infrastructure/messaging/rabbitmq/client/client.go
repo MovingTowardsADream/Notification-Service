@@ -103,6 +103,8 @@ func (c *Client) reconnect() {
 }
 
 func (c *Client) RemoteCall(ctx context.Context, handler string, priority models.NotifyType, request any) error {
+	const op = "rmq_client - RemoteCall"
+
 	select {
 	case <-c.stop:
 		time.Sleep(c.timeout)
@@ -128,7 +130,7 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 	err := c.publish(corrID, handler, priority, request)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("rmqrpc client - Client - RemoteCall - c.publish: %w", err)
+		return fmt.Errorf("%s - c.publish: %w", op, err)
 	}
 	return nil
 }
@@ -138,6 +140,8 @@ func (c *Client) Notify() <-chan error {
 }
 
 func (c *Client) Shutdown() error {
+	const op = "rmq_client - Shutdown"
+
 	select {
 	case <-c.error:
 		return nil
@@ -149,7 +153,7 @@ func (c *Client) Shutdown() error {
 
 	err := c.conn.Connection.Close()
 	if err != nil {
-		return fmt.Errorf("rmqrpc client - Client - Shutdown - c.Connection.Close: %w", err)
+		return fmt.Errorf("%s - c.Connection.Close: %w", op, err)
 	}
 
 	return nil
