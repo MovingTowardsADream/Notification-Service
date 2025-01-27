@@ -1,0 +1,18 @@
+### Edit user preferences by user id
+
+grpcurl -plaintext \
+    -import-path ./api/proto/notify \
+    -import-path ./api/proto \
+    -proto notify.proto \
+    -d '{
+        "preferences": {
+            "mail": {
+                "approval": true
+            },
+            "phone": {
+                "approval": false
+            }
+        },
+        "userID": "5c036da04d6e74d3b885a2389a2bbb17"
+    }' \
+    localhost:8080 notify.Users/EditPreferences

@@ -3,6 +3,7 @@ package logger
 import (
 	"log/slog"
 	"os"
+	"time"
 
 	multihandler "Notification_Service/pkg/logger/multi_handler"
 )
@@ -105,7 +106,16 @@ func (l *LogData) Warn(msg string, attrs ...Attr) {
 func convertAttrs(attrs []Attr) []any {
 	slogAttrs := make([]any, len(attrs))
 	for i, attr := range attrs {
-		slogAttrs[i] = slog.Any(attr.Key, attr.Value)
+		switch v := attr.Value.(type) {
+		case time.Duration:
+			slogAttrs[i] = slog.Any(attr.Key, slog.StringValue(v.String()))
+		case string:
+			slogAttrs[i] = slog.Any(attr.Key, slog.StringValue(v))
+		case int, int64, int32, float32, float64:
+			slogAttrs[i] = slog.Any(attr.Key, v)
+		default:
+			slogAttrs[i] = slog.Any(attr.Key, v)
+		}
 	}
 	return slogAttrs
 }

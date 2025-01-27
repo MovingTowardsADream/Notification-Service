@@ -1,0 +1,35 @@
+### Send notification by user id
+
+# curl -X POST http://localhost:8080/v1/send_message -H "Content-Type: application/json"
+#-d '{
+#            "channels": {
+#                "mail": {
+#                    "body": "ad quis",
+#                    "subject": "in labore voluptate quis"
+#                },
+#                "phone": {
+#                    "body": "consectetur ullamco qui"
+#                }
+#            },
+#            "notifyType": "significant",
+#            "userID": "5c036da04d6e74d3b885a2389a2bbb17"
+#        }'
+POST http://localhost:8080/v1/send_message
+Content-Type: application/json
+
+{
+  "channels": {
+    "mail": {
+      "body": "ad quis",
+      "subject": "in labore voluptate quis"
+    },
+    "phone": {
+      "body": "consectetur ullamco qui"
+    }
+  },
+  "notifyType": "significant",
+  "userID": "5c036da04d6e74d3b885a2389a2bbb17"
+}
+
+###
+

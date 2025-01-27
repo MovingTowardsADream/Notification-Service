@@ -1,0 +1,32 @@
+### Edit user preferences by user id
+
+# curl -X POST http://localhost:8080/v1/edit_preferences
+#-H "Content-Type: application/json"
+#-d '{
+#        "preferences": {
+#            "mail": {
+#                "approval": true
+#            },
+#            "phone": {
+#                "approval": false
+#            }
+#        },
+#        "userID": "5c036da04d6e74d3b885a2389a2bbb17"
+#}'
+POST http://localhost:8080/v1/edit_preferences
+Content-Type: application/json
+
+{
+  "preferences": {
+    "mail": {
+      "approval": true
+    },
+    "phone": {
+      "approval": false
+    }
+  },
+  "userID": "5c036da04d6e74d3b885a2389a2bbb17"
+}
+
+###
+

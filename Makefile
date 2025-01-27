@@ -18,11 +18,14 @@ migrate:
 
 .PHONY: gen-api
 gen-api:
-	protoc -I ./api/proto -I ./api/proto/validate \
-    	./api/proto/notify/notify.proto \
-    	--go_out=./api/gen/go --go_opt=paths=source_relative \
-    	--go-grpc_out=./api/gen/go --go-grpc_opt=paths=source_relative \
-    	--validate_out="lang=go:./api/gen/go"
+	protoc -I ./api/proto \
+		-I ./api/proto/validate \
+		-I ./api/proto \
+        ./api/proto/notify/notify.proto \
+        --go_out=./api/gen/go --go_opt=paths=source_relative \
+        --go-grpc_out=./api/gen/go --go-grpc_opt=paths=source_relative \
+        --grpc-gateway_out=./api/gen/go --grpc-gateway_opt=paths=source_relative \
+        --validate_out="lang=go:./api/gen/go"
 
 .PHONY: docs
 docs:
