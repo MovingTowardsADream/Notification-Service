@@ -11,6 +11,8 @@ import (
 	"Notification_Service/internal/interfaces/dto"
 )
 
+//go:generate mockgen -source=worker.go -destination=../../../../tests/gotests/mocks/sender_mocks.go -package=mocks
+
 type SenderMail interface {
 	SendMailLetter(ctx context.Context, notify dto.MailDate) error
 }

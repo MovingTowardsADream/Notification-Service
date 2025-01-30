@@ -42,6 +42,9 @@ type (
 	Storage struct {
 		PoolMax      int32         `env:"PG_POOL_MAX" env-default:"2"     yaml:"poolMax"`
 		URL          string        `env:"PG_URL"      env-required:"true" yaml:"url"`
+		Username     string        `env:"POSTGRES_USER"`
+		Password     string        `env:"POSTGRES_PASSWORD"`
+		DBName       string        `env:"POSTGRES_DB"`
 		ConnAttempts int           `env:"PG_CONN_ATTEMPTS" yaml:"connAttempts"`
 		ConnTimeout  time.Duration `env:"PG_CONN_TIMEOUT" yaml:"connTimeout"`
 	}
@@ -62,10 +65,12 @@ type (
 	}
 
 	Messaging struct {
-		Server MessagingServer `yaml:"server"`
-		Client MessagingClient `yaml:"client"`
-		URL    string          `env:"RMQ_URL"        env-required:"true"      yaml:"url"`
-		Topics []string        `env:"RMQ_TOPICS"     env-required:"true"      yaml:"topics"`
+		Server   MessagingServer `yaml:"server"`
+		Client   MessagingClient `yaml:"client"`
+		URL      string          `env:"RMQ_URL"        env-required:"true"      yaml:"url"`
+		Username string          `env:"RABBITMQ_DEFAULT_USER"`
+		Password string          `env:"RABBITMQ_DEFAULT_PASS"`
+		Topics   []string        `env:"RMQ_TOPICS"     env-required:"true"      yaml:"topics"`
 	}
 
 	SMTP struct {

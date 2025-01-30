@@ -102,9 +102,9 @@ func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 
 	smtpClient := smtp.New(
 		smtp.Params{
-			Domain:   cfg.Domain,
-			Username: cfg.UserName,
-			Password: cfg.Password,
+			Domain:   cfg.SMTP.Domain,
+			Username: cfg.SMTP.UserName,
+			Password: cfg.SMTP.Password,
 		},
 		smtp.Port(cfg.SMTP.Port),
 	)

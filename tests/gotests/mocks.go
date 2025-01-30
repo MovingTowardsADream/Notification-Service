@@ -3,19 +3,21 @@ package gotests
 import (
 	"context"
 
-	"Notification_Service/pkg/logger"
+	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
+	"Notification_Service/tests/gotests/mocks"
 )
 
 func SetupMocks(ctx context.Context, name string) (
 	context.Context,
-	*MockServer,
 	Repository,
 	func(),
 ) {
 	ctx, cancel := context.WithCancel(ctx)
 	ctx = context.WithValue(ctx, TestSessionIDHeader, name)
 
-	repo, err := NewRepository()
+	rmqRouter := amqprpc.NewRouter(new(mocks.MockSenderMail), new(mocks.MockSenderPhone))
+
+	repo, err := NewRepository(ctx, rmqRouter)
 	if err != nil {
 		panic(err)
 	}
@@ -25,17 +27,7 @@ func SetupMocks(ctx context.Context, name string) (
 		panic(err)
 	}
 
-	cfg := repo.Config()
-
-	log, err := logger.Setup(cfg.Log.Level, cfg.Log.Path)
-	if err != nil {
-		panic(err)
-	}
-
-	mockServer := NewMockServer(log, , WithPort(8081))
-
-	return ctx, mockServer, repo, func() {
-		_ = mockServer.Close()
+	return ctx, repo, func() {
 		_ = repo.Stop(context.Background())
 		cancel()
 	}
