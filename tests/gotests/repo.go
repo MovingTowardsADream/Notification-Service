@@ -32,6 +32,7 @@ type RepositoryImpl struct {
 	serviceName string
 	config      *config.Config
 	clients     *Clients
+	mockServer  *MockServer
 	storage     *postgres.Postgres
 	mesServ     *rmqserver.Server
 	mesClient   *rmqclient.Client

@@ -15,15 +15,16 @@ const TestSessionIDHeader TestContextKey = "Test-Session-Id"
 
 type BaseSuite struct {
 	suite.Suite
-	Name    string
-	ctx     context.Context
-	TestCtx context.Context
-	Repo    Repository
-	cancel  func()
+	Name       string
+	ctx        context.Context
+	TestCtx    context.Context
+	Repo       Repository
+	mockServer *MockServer
+	cancel     func()
 }
 
 func (s *BaseSuite) SetupSuite() {
-	s.ctx, s.Repo, s.cancel = SetupMocks(context.Background(), s.Name)
+	s.ctx, s.Repo, s.mockServer, s.cancel = SetupMocks(context.Background(), s.Name, s.T())
 }
 
 func (s *BaseSuite) TearDownSuite() {

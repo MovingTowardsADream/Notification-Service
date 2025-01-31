@@ -31,6 +31,7 @@ type HandlingLogger interface {
 	Err(err error) Attr
 }
 
+
 type DefaultLogger interface {
 	Info(msg string, attrs ...Attr)
 	Error(msg string, attrs ...Attr)
@@ -38,6 +39,7 @@ type DefaultLogger interface {
 	Warn(msg string, attrs ...Attr)
 }
 
+//go:generate mockgen -source=logger.go -destination=./mocks/logger_mocks.go -package=mocks
 type Logger interface {
 	DefaultLogger
 	HandlingLogger
