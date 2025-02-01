@@ -10,15 +10,11 @@ import (
 	"Notification_Service/pkg/logger"
 )
 
-const (
-	_defaultConfigPath = "./configs/testing.yaml"
-	_defaultEnvPath    = ".env"
-)
-
 type Repository interface {
 	UnitName() string
 	ServiceName() string
 	Config() *config.Config
+	Logger() logger.Logger
 	Clients() *Clients
 	Storage() *postgres.Postgres
 	MesServer() *rmqserver.Server
@@ -31,14 +27,17 @@ type RepositoryImpl struct {
 	unitName    string
 	serviceName string
 	config      *config.Config
+	logger      logger.Logger
 	clients     *Clients
 	mockServer  *MockServer
 	storage     *postgres.Postgres
 	mesServ     *rmqserver.Server
 	mesClient   *rmqclient.Client
+	rmqRouter   map[string]rmqserver.CallHandler
+	cancel      func() error
 }
 
-func NewRepository(ctx context.Context, rmqRouter map[string]rmqserver.CallHandler) (Repository, error) {
+func NewRepository(_ context.Context, rmqRouter map[string]rmqserver.CallHandler) (Repository, error) {
 	var err error
 
 	repo := &RepositoryImpl{}
@@ -46,47 +45,15 @@ func NewRepository(ctx context.Context, rmqRouter map[string]rmqserver.CallHandl
 	repo.unitName = "notify_web"
 	repo.serviceName = "notify"
 
-	repo.config = config.MustLoadPath(_defaultConfigPath, _defaultEnvPath)
+	repo.config = initTestConfig()
 
-	log, err := logger.Setup(_defaultEnvPath, nil)
-
-	if err != nil {
-		panic(err)
-	}
-
-	repo.clients, err = NewClients(ctx, repo.config)
+	repo.logger, err = logger.Setup(repo.config.Log.Level, nil)
 
 	if err != nil {
 		panic(err)
 	}
 
-	runDatabaseIntegration(ctx, repo.config)
-	repo.storage, err = postgres.New(ctx, repo.config.Storage.URL)
-
-	if err != nil {
-		panic("storage connection error" + err.Error())
-	}
-
-	runMessagingIntegration(ctx, repo.config)
-
-	repo.mesClient, err = rmqclient.New(
-		repo.config.Messaging.URL,
-		repo.config.Messaging.Server.RPCExchange,
-		repo.config.Messaging.Client.RPCExchange,
-		repo.config.Messaging.Topics,
-	)
-
-	if err != nil {
-		panic("messaging client connection error" + err.Error())
-	}
-
-	repo.mesServ, err = rmqserver.New(
-		repo.config.Messaging.URL,
-		repo.config.Messaging.Server.RPCExchange,
-		repo.config.Messaging.Topics,
-		rmqRouter,
-		log,
-	)
+	repo.rmqRouter = rmqRouter
 
 	return repo, nil
 }
@@ -101,6 +68,10 @@ func (r *RepositoryImpl) ServiceName() string {
 
 func (r *RepositoryImpl) Config() *config.Config {
 	return r.config
+}
+
+func (r *RepositoryImpl) Logger() logger.Logger {
+	return r.logger
 }
 
 func (r *RepositoryImpl) Clients() *Clients {
@@ -120,11 +91,61 @@ func (r *RepositoryImpl) MesClient() *rmqclient.Client {
 }
 
 func (r *RepositoryImpl) Start(ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	var err error
+
+	cancelDB := initDatabaseIntegration(ctx)
+	cancelMes := initMessagingIntegration(ctx)
+
+	r.clients, err = NewClients(ctx, r.config)
+
+	if err != nil {
+		panic(err)
+	}
+
+	r.storage, err = postgres.New(ctx, r.config.Storage.URL)
+
+	if err != nil {
+		panic("storage connection error" + err.Error())
+	}
+
+	err = r.storage.Ping(ctx)
+
+	if err != nil {
+		panic("storage ping error" + err.Error())
+	}
+
+	r.mesClient, err = rmqclient.New(
+		r.config.Messaging.URL,
+		r.config.Messaging.Server.RPCExchange,
+		r.config.Messaging.Client.RPCExchange,
+		r.config.Messaging.Topics,
+	)
+
+	if err != nil {
+		panic("messaging client connection error" + err.Error())
+	}
+
+	r.mesServ, err = rmqserver.New(
+		r.config.Messaging.URL,
+		r.config.Messaging.Server.RPCExchange,
+		r.config.Messaging.Topics,
+		r.rmqRouter,
+		r.logger,
+	)
+
+	r.cancel = func() error {
+		_ = r.mesClient.Shutdown()
+		_ = r.mesServ.Shutdown()
+		r.storage.Close()
+		cancelDB()
+		cancelMes()
+
+		return nil
+	}
+
+	return nil
 }
 
 func (r *RepositoryImpl) Stop(ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	return r.cancel()
 }

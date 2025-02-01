@@ -10,7 +10,6 @@ import (
 	gwmessaging "Notification_Service/internal/infrastructure/gateway/messaging"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
-	logMocks "Notification_Service/pkg/logger/mocks"
 	"Notification_Service/tests/gotests/mocks"
 )
 
@@ -31,15 +30,16 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	phoneMocks := mocks.NewMockSenderPhone(ctrl)
 	phoneMocks.EXPECT().SendPhoneSMS(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
-	logger := logMocks.NewMockLogger(ctrl)
-	logger.EXPECT().Error(gomock.Any()).AnyTimes()
-	logger.EXPECT().Info(gomock.Any()).AnyTimes()
-	logger.EXPECT().Warn(gomock.Any()).AnyTimes()
-	logger.EXPECT().Debug(gomock.Any()).AnyTimes()
-
 	rmqRouter := amqprpc.NewRouter(mailMocks, phoneMocks)
 
 	repo, err := NewRepository(ctx, rmqRouter)
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = repo.Start(ctx)
+
 	if err != nil {
 		panic(err)
 	}
@@ -48,20 +48,21 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 
 	gateway := gwmessaging.NewNotifyGateway(repo.MesClient())
 
-	notifySender := usecase.NewNotifySender(logger, usersRepo, gateway)
-	editInfo := usecase.NewEditInfo(logger, usersRepo)
+	notifySender := usecase.NewNotifySender(repo.Logger(), usersRepo, gateway)
+	editInfo := usecase.NewEditInfo(repo.Logger(), usersRepo)
 
 	mockServer := NewMockServer(notifySender, editInfo)
 
-	err = repo.Start(ctx)
+	err = mockServer.ListenAndServe(ctx)
+
 	if err != nil {
 		panic(err)
 	}
 
 	return ctx, repo, mockServer, func() {
-		ctrl.Finish()
 		_ = repo.Stop(context.Background())
 		_ = mockServer.Close()
+		ctrl.Finish()
 		cancel()
 	}
 }

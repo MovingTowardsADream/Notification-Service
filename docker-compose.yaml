@@ -10,6 +10,8 @@ services:
       - .env
     ports:
       - 5432:5432
+    networks:
+      - notify_network
     restart: unless-stopped
 
   rabbitmq:
@@ -17,6 +19,8 @@ services:
     image: rabbitmq:3.8.12-management
     env_file:
       - .env
+    networks:
+      - notify_network
     ports:
       - 5672:5672
       - 15672:15672
@@ -26,6 +30,8 @@ services:
     container_name: loki
     ports:
       - 3100:3100
+    networks:
+      - notify_network
     volumes:
       - ${CONFIG_PATH}/loki/loki-config.yaml.${CONF_LEVEL}:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
@@ -33,6 +39,8 @@ services:
   promtail:
     image: grafana/promtail:2.4.0
     container_name: promtail
+    networks:
+      - notify_network
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers
       - /tmp:/tmp
@@ -47,6 +55,8 @@ services:
       - 4317:4317
       - 4318:4318
       - 3200:3200
+    networks:
+      - notify_network
     volumes:
       - ${CONFIG_PATH}/tempo/tempo-config.yaml.${CONF_LEVEL}:/etc/tempo.yaml
     command:
@@ -57,6 +67,8 @@ services:
     container_name: prometheus
     ports:
       - 9090:9090
+    networks:
+      - notify_network
     volumes:
       - ${CONFIG_PATH}/prometheus/prometheus-config.yaml.${CONF_LEVEL}:/etc/prometheus/prometheus.yml
 
@@ -67,6 +79,8 @@ services:
       - 3000:3000
     env_file:
       - .env
+    networks:
+      - notify_network
     volumes:
       - ${CONFIG_PATH}/grafana/data-sources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
     depends_on:
@@ -82,6 +96,8 @@ services:
       job: notify
     env_file:
       - .env
+    networks:
+      - notify_network
     ports:
       - 8080:8080
       - 8081:8081
@@ -96,3 +112,6 @@ services:
 
 volumes:
   pg-data:
+
+networks:
+  notify_network:

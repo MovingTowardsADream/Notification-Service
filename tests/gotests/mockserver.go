@@ -67,6 +67,7 @@ func (s *MockServer) ListenAndServe(ctx context.Context) error {
 
 func (s *MockServer) Serve(ctx context.Context, listener net.Listener) error {
 	ctx, cancel := context.WithCancel(ctx)
+
 	s.cancelOnce = &sync.Once{}
 	s.cancelFunc = cancel
 
@@ -77,9 +78,11 @@ func (s *MockServer) Serve(ctx context.Context, listener net.Listener) error {
 
 	go func() {
 		serv := s.gRPCServer.Serve(listener)
+
 		if serv != nil {
 			s.errCh <- serv
 		}
+
 		close(s.errCh)
 	}()
 
