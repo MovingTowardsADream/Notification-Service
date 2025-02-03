@@ -31,7 +31,6 @@ type HandlingLogger interface {
 	Err(err error) Attr
 }
 
-
 type DefaultLogger interface {
 	Info(msg string, attrs ...Attr)
 	Error(msg string, attrs ...Attr)

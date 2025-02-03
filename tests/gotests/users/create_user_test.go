@@ -1,4 +1,4 @@
-package users
+package users_test
 
 import (
 	"context"
@@ -31,6 +31,6 @@ func (s *CreateUserSuite) TestSuccess() {
 	s.Require().NoError(err)
 }
 
-func TestUserPrefSuite(t *testing.T) {
+func TestCreateUserSuite(t *testing.T) {
 	suite.Run(t, &CreateUserSuite{gotests.BaseSuite{Name: t.Name()}})
 }

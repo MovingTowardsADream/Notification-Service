@@ -35,7 +35,7 @@ func (s *BaseSuite) GetContext() context.Context {
 	return s.ctx
 }
 
-// clear all stuck data/caches before next test
+// clear all stuck data/caches before next test.
 func (s *BaseSuite) clear() {}
 
 func (s *BaseSuite) NewTestContext() {

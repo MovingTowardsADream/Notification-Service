@@ -6,7 +6,10 @@ import (
 
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/go-connections/nat"
+
+	// package for initializing the PostgreSQL driver, which is not used directly.
 	_ "github.com/lib/pq"
+
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 )

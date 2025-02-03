@@ -5,6 +5,8 @@ import (
 	"errors"
 
 	"github.com/golang-migrate/migrate/v4"
+
+	// package for initializing migration on PostgreSQL.
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 
@@ -36,7 +38,6 @@ type RepositoryImpl struct {
 	config      *config.Config
 	logger      logger.Logger
 	clients     *Clients
-	mockServer  *MockServer
 	storage     *postgres.Postgres
 	mesServ     *rmqserver.Server
 	mesClient   *rmqclient.Client
@@ -141,6 +142,10 @@ func (r *RepositoryImpl) Start(ctx context.Context) error {
 		r.rmqRouter,
 		r.logger,
 	)
+
+	if err != nil {
+		panic("messaging server connection error" + err.Error())
+	}
 
 	r.cancel = func() error {
 		_ = r.mesClient.Shutdown()
