@@ -121,6 +121,7 @@ var Notify_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
+	Users_AddUser_FullMethodName         = "/notify.Users/AddUser"
 	Users_EditPreferences_FullMethodName = "/notify.Users/EditPreferences"
 )
 
@@ -128,6 +129,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UsersClient interface {
+	AddUser(ctx context.Context, in *AddUserReq, opts ...grpc.CallOption) (*AddUserResp, error)
 	EditPreferences(ctx context.Context, in *EditPreferencesReq, opts ...grpc.CallOption) (*EditPreferencesResp, error)
 }
 
@@ -137,6 +139,16 @@ type usersClient struct {
 
 func NewUsersClient(cc grpc.ClientConnInterface) UsersClient {
 	return &usersClient{cc}
+}
+
+func (c *usersClient) AddUser(ctx context.Context, in *AddUserReq, opts ...grpc.CallOption) (*AddUserResp, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddUserResp)
+	err := c.cc.Invoke(ctx, Users_AddUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *usersClient) EditPreferences(ctx context.Context, in *EditPreferencesReq, opts ...grpc.CallOption) (*EditPreferencesResp, error) {
@@ -153,6 +165,7 @@ func (c *usersClient) EditPreferences(ctx context.Context, in *EditPreferencesRe
 // All implementations must embed UnimplementedUsersServer
 // for forward compatibility.
 type UsersServer interface {
+	AddUser(context.Context, *AddUserReq) (*AddUserResp, error)
 	EditPreferences(context.Context, *EditPreferencesReq) (*EditPreferencesResp, error)
 	mustEmbedUnimplementedUsersServer()
 }
@@ -164,6 +177,9 @@ type UsersServer interface {
 // pointer dereference when methods are called.
 type UnimplementedUsersServer struct{}
 
+func (UnimplementedUsersServer) AddUser(context.Context, *AddUserReq) (*AddUserResp, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
+}
 func (UnimplementedUsersServer) EditPreferences(context.Context, *EditPreferencesReq) (*EditPreferencesResp, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method EditPreferences not implemented")
 }
@@ -186,6 +202,24 @@ func RegisterUsersServer(s grpc.ServiceRegistrar, srv UsersServer) {
 		t.testEmbeddedByValue()
 	}
 	s.RegisterService(&Users_ServiceDesc, srv)
+}
+
+func _Users_AddUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddUserReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).AddUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Users_AddUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).AddUser(ctx, req.(*AddUserReq))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Users_EditPreferences_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -213,6 +247,10 @@ var Users_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "notify.Users",
 	HandlerType: (*UsersServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "AddUser",
+			Handler:    _Users_AddUser_Handler,
+		},
 		{
 			MethodName: "EditPreferences",
 			Handler:    _Users_EditPreferences_Handler,

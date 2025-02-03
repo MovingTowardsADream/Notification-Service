@@ -697,6 +697,535 @@ var _ interface {
 	ErrorName() string
 } = SendMessageRespValidationError{}
 
+// Validate checks the field values on Preferences with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Preferences) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on Preferences with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in PreferencesMultiError, or
+// nil if none found.
+func (m *Preferences) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *Preferences) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.Mail != nil {
+
+		if all {
+			switch v := interface{}(m.GetMail()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PreferencesValidationError{
+						field:  "Mail",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PreferencesValidationError{
+						field:  "Mail",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetMail()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PreferencesValidationError{
+					field:  "Mail",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if m.Phone != nil {
+
+		if all {
+			switch v := interface{}(m.GetPhone()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, PreferencesValidationError{
+						field:  "Phone",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, PreferencesValidationError{
+						field:  "Phone",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPhone()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return PreferencesValidationError{
+					field:  "Phone",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return PreferencesMultiError(errors)
+	}
+
+	return nil
+}
+
+// PreferencesMultiError is an error wrapping multiple validation errors
+// returned by Preferences.ValidateAll() if the designated constraints aren't met.
+type PreferencesMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m PreferencesMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m PreferencesMultiError) AllErrors() []error { return m }
+
+// PreferencesValidationError is the validation error returned by
+// Preferences.Validate if the designated constraints aren't met.
+type PreferencesValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e PreferencesValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e PreferencesValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e PreferencesValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e PreferencesValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e PreferencesValidationError) ErrorName() string { return "PreferencesValidationError" }
+
+// Error satisfies the builtin error interface
+func (e PreferencesValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sPreferences.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = PreferencesValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = PreferencesValidationError{}
+
+// Validate checks the field values on AddUserReq with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AddUserReq) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AddUserReq with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AddUserReqMultiError, or
+// nil if none found.
+func (m *AddUserReq) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AddUserReq) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if utf8.RuneCountInString(m.GetUsername()) < 1 {
+		err := AddUserReqValidationError{
+			field:  "Username",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_AddUserReq_Username_Pattern.MatchString(m.GetUsername()) {
+		err := AddUserReqValidationError{
+			field:  "Username",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9_-]+$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetEmail()) < 1 {
+		err := AddUserReqValidationError{
+			field:  "Email",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_AddUserReq_Email_Pattern.MatchString(m.GetEmail()) {
+		err := AddUserReqValidationError{
+			field:  "Email",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\\\.[a-zA-Z]{2,}$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPhone()) < 1 {
+		err := AddUserReqValidationError{
+			field:  "Phone",
+			reason: "value length must be at least 1 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_AddUserReq_Phone_Pattern.MatchString(m.GetPhone()) {
+		err := AddUserReqValidationError{
+			field:  "Phone",
+			reason: "value does not match regex pattern \"^[+]?[0-9]+$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if utf8.RuneCountInString(m.GetPassword()) < 8 {
+		err := AddUserReqValidationError{
+			field:  "Password",
+			reason: "value length must be at least 8 runes",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if !_AddUserReq_Password_Pattern.MatchString(m.GetPassword()) {
+		err := AddUserReqValidationError{
+			field:  "Password",
+			reason: "value does not match regex pattern \"^[a-zA-Z0-9_-]+$\"",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.Preferences != nil {
+
+		if all {
+			switch v := interface{}(m.GetPreferences()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, AddUserReqValidationError{
+						field:  "Preferences",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, AddUserReqValidationError{
+						field:  "Preferences",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			}
+		} else if v, ok := interface{}(m.GetPreferences()).(interface{ Validate() error }); ok {
+			if err := v.Validate(); err != nil {
+				return AddUserReqValidationError{
+					field:  "Preferences",
+					reason: "embedded message failed validation",
+					cause:  err,
+				}
+			}
+		}
+
+	}
+
+	if len(errors) > 0 {
+		return AddUserReqMultiError(errors)
+	}
+
+	return nil
+}
+
+// AddUserReqMultiError is an error wrapping multiple validation errors
+// returned by AddUserReq.ValidateAll() if the designated constraints aren't met.
+type AddUserReqMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AddUserReqMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AddUserReqMultiError) AllErrors() []error { return m }
+
+// AddUserReqValidationError is the validation error returned by
+// AddUserReq.Validate if the designated constraints aren't met.
+type AddUserReqValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddUserReqValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddUserReqValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddUserReqValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddUserReqValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddUserReqValidationError) ErrorName() string { return "AddUserReqValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AddUserReqValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddUserReq.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddUserReqValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddUserReqValidationError{}
+
+var _AddUserReq_Username_Pattern = regexp.MustCompile("^[a-zA-Z0-9_-]+$")
+
+var _AddUserReq_Email_Pattern = regexp.MustCompile("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$")
+
+var _AddUserReq_Phone_Pattern = regexp.MustCompile("^[+]?[0-9]+$")
+
+var _AddUserReq_Password_Pattern = regexp.MustCompile("^[a-zA-Z0-9_-]+$")
+
+// Validate checks the field values on AddUserResp with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *AddUserResp) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on AddUserResp with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in AddUserRespMultiError, or
+// nil if none found.
+func (m *AddUserResp) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *AddUserResp) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Id
+
+	// no validation rules for Username
+
+	// no validation rules for Email
+
+	// no validation rules for Phone
+
+	if all {
+		switch v := interface{}(m.GetCreatedAt()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AddUserRespValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AddUserRespValidationError{
+					field:  "CreatedAt",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AddUserRespValidationError{
+				field:  "CreatedAt",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return AddUserRespMultiError(errors)
+	}
+
+	return nil
+}
+
+// AddUserRespMultiError is an error wrapping multiple validation errors
+// returned by AddUserResp.ValidateAll() if the designated constraints aren't met.
+type AddUserRespMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m AddUserRespMultiError) Error() string {
+	var msgs []string
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m AddUserRespMultiError) AllErrors() []error { return m }
+
+// AddUserRespValidationError is the validation error returned by
+// AddUserResp.Validate if the designated constraints aren't met.
+type AddUserRespValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e AddUserRespValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e AddUserRespValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e AddUserRespValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e AddUserRespValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e AddUserRespValidationError) ErrorName() string { return "AddUserRespValidationError" }
+
+// Error satisfies the builtin error interface
+func (e AddUserRespValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sAddUserResp.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = AddUserRespValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = AddUserRespValidationError{}
+
 // Validate checks the field values on MailApproval with the rules defined in
 // the proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -899,171 +1428,6 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = PhoneApprovalValidationError{}
-
-// Validate checks the field values on Preferences with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *Preferences) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on Preferences with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in PreferencesMultiError, or
-// nil if none found.
-func (m *Preferences) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *Preferences) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	if m.Mail != nil {
-
-		if all {
-			switch v := interface{}(m.GetMail()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, PreferencesValidationError{
-						field:  "Mail",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, PreferencesValidationError{
-						field:  "Mail",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetMail()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return PreferencesValidationError{
-					field:  "Mail",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if m.Phone != nil {
-
-		if all {
-			switch v := interface{}(m.GetPhone()).(type) {
-			case interface{ ValidateAll() error }:
-				if err := v.ValidateAll(); err != nil {
-					errors = append(errors, PreferencesValidationError{
-						field:  "Phone",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			case interface{ Validate() error }:
-				if err := v.Validate(); err != nil {
-					errors = append(errors, PreferencesValidationError{
-						field:  "Phone",
-						reason: "embedded message failed validation",
-						cause:  err,
-					})
-				}
-			}
-		} else if v, ok := interface{}(m.GetPhone()).(interface{ Validate() error }); ok {
-			if err := v.Validate(); err != nil {
-				return PreferencesValidationError{
-					field:  "Phone",
-					reason: "embedded message failed validation",
-					cause:  err,
-				}
-			}
-		}
-
-	}
-
-	if len(errors) > 0 {
-		return PreferencesMultiError(errors)
-	}
-
-	return nil
-}
-
-// PreferencesMultiError is an error wrapping multiple validation errors
-// returned by Preferences.ValidateAll() if the designated constraints aren't met.
-type PreferencesMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m PreferencesMultiError) Error() string {
-	var msgs []string
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m PreferencesMultiError) AllErrors() []error { return m }
-
-// PreferencesValidationError is the validation error returned by
-// Preferences.Validate if the designated constraints aren't met.
-type PreferencesValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e PreferencesValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e PreferencesValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e PreferencesValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e PreferencesValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e PreferencesValidationError) ErrorName() string { return "PreferencesValidationError" }
-
-// Error satisfies the builtin error interface
-func (e PreferencesValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sPreferences.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = PreferencesValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = PreferencesValidationError{}
 
 // Validate checks the field values on EditPreferencesReq with the rules
 // defined in the proto definition for this message. If any rules are

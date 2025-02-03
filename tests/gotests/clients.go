@@ -17,7 +17,7 @@ type Clients struct {
 }
 
 func NewClients(ctx context.Context, cfg *config.Config) (*Clients, error) {
-	host, port := "", cfg.GRPC.Port
+	host, port := "localhost", cfg.GRPC.Port
 
 	nc, err := grpc.DialContext(ctx, utils.FormatAddress(host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 

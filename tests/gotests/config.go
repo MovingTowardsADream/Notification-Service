@@ -44,5 +44,8 @@ func initTestConfig() *config.Config {
 		Log: config.Log{
 			Level: "testing",
 		},
+		Security: config.Security{
+			PasswordSalt: "salt",
+		},
 	}
 }

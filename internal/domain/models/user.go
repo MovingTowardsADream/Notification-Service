@@ -5,9 +5,9 @@ import (
 )
 
 type User struct {
-	ID       string
-	Username string
-	Email    string
-	Phone    string
-	Time     time.Time
+	ID        string
+	Username  string
+	Email     string
+	Phone     string
+	CreatedAt time.Time
 }

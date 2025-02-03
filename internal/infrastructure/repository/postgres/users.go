@@ -7,6 +7,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
+	"Notification_Service/internal/domain/models"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -123,4 +124,67 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	}
 
 	return nil
+}
+
+func (ur *UsersRepo) Create(ctx context.Context, userData *dto.User) (*models.User, error) {
+	const op = "UsersRepo.Add"
+	const spanName = "Add"
+
+	tracer := otel.Tracer(tracerName)
+	ctx, span := tracer.Start(ctx, spanName)
+	defer span.End()
+
+	tx, err := ur.storage.Pool.Begin(ctx)
+	if err != nil {
+		span.RecordError(err)
+		return nil, fmt.Errorf("%s - r.Pool.Begin: %w", op, mappingErrors(err))
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	user := &models.User{}
+
+	sql, args, _ := ur.storage.Builder.
+		Insert(usersTable).
+		Columns("username", "email", "phone", "password_hash").
+		Values(userData.Username, userData.Email, userData.Phone, userData.Password).
+		Suffix("RETURNING id, username, email, phone, time").
+		ToSql()
+
+	err = ur.storage.Pool.QueryRow(ctx, sql, args...).Scan(&user.ID, &user.Username, &user.Email, &user.Phone, &user.CreatedAt)
+
+	if err != nil {
+		span.RecordError(err)
+		return nil, fmt.Errorf("UserRepo.Create - ur.storage.Pool.QueryRow: %w", mappingErrors(err))
+	}
+
+	var emailNotify, phoneNotify bool
+
+	if userData.Preferences.Mail != nil {
+		emailNotify = userData.Preferences.Mail.Approval
+	}
+
+	if userData.Preferences.Phone != nil {
+		phoneNotify = userData.Preferences.Phone.Approval
+	}
+
+	sql, args, _ = ur.storage.Builder.
+		Insert(notifyTable).
+		Columns("email_notify", "phone_notify", "user_id").
+		Values(emailNotify, phoneNotify, user.ID).
+		ToSql()
+
+	_, err = ur.storage.Pool.Exec(ctx, sql, args...)
+
+	if err != nil {
+		span.RecordError(err)
+		return nil, fmt.Errorf("UserRepo.Create - ur.storage.Pool.QueryRow: %w", mappingErrors(err))
+	}
+
+	err = tx.Commit(ctx)
+	if err != nil {
+		span.RecordError(err)
+		return nil, fmt.Errorf("%s - tx.Commit: %w", op, mappingErrors(err))
+	}
+
+	return user, nil
 }

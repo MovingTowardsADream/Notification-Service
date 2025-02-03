@@ -5,7 +5,6 @@ import (
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
-	"google.golang.org/grpc"
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	grpcerr "Notification_Service/internal/infrastructure/grpc/errors"
@@ -15,15 +14,6 @@ import (
 
 type SendersNotify interface {
 	SendToUser(ctx context.Context, notifyRequest *dto.ReqNotification) error
-}
-
-type sendNotifyRoutes struct {
-	notifyv1.UnimplementedNotifyServer
-	notifySend SendersNotify
-}
-
-func Notify(gRPC *grpc.Server, notifySend SendersNotify) {
-	notifyv1.RegisterNotifyServer(gRPC, &sendNotifyRoutes{notifySend: notifySend})
 }
 
 func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMessageReq) (*notifyv1.SendMessageResp, error) {

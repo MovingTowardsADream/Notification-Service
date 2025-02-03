@@ -179,6 +179,14 @@
             <ul>
               
                 <li>
+                  <a href="#notify.AddUserReq"><span class="badge">M</span>AddUserReq</a>
+                </li>
+              
+                <li>
+                  <a href="#notify.AddUserResp"><span class="badge">M</span>AddUserResp</a>
+                </li>
+              
+                <li>
                   <a href="#notify.Channels"><span class="badge">M</span>Channels</a>
                 </li>
               
@@ -247,6 +255,178 @@
       </div>
       <p></p>
 
+      
+        <h3 id="notify.AddUserReq">AddUserReq</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>username</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>email</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>phone</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>password</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>preferences</td>
+                  <td><a href="#notify.Preferences">Preferences</a></td>
+                  <td>optional</td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+            
+            
+            <h4>Validated Fields</h4>
+            <table>
+              <thead>
+                <tr>
+                  <td>Field</td>
+                  <td>Validations</td>
+                </tr>
+              </thead>
+              <tbody>
+              
+                <tr>
+                  <td>username</td>
+                  <td>
+                    <ul>
+                    
+                      <li>string.min_len: 1</li>
+                    
+                      <li>string.pattern: ^[a-zA-Z0-9_-]&#43;$</li>
+                    
+                    </ul>
+                  </td>
+                </tr>
+              
+                <tr>
+                  <td>email</td>
+                  <td>
+                    <ul>
+                    
+                      <li>string.min_len: 1</li>
+                    
+                      <li>string.pattern: ^[a-zA-Z0-9._%&#43;-]&#43;@[a-zA-Z0-9.-]&#43;\.[a-zA-Z]{2,}$</li>
+                    
+                    </ul>
+                  </td>
+                </tr>
+              
+                <tr>
+                  <td>phone</td>
+                  <td>
+                    <ul>
+                    
+                      <li>string.min_len: 1</li>
+                    
+                      <li>string.pattern: ^[&#43;]?[0-9]&#43;$</li>
+                    
+                    </ul>
+                  </td>
+                </tr>
+              
+                <tr>
+                  <td>password</td>
+                  <td>
+                    <ul>
+                    
+                      <li>string.min_len: 8</li>
+                    
+                      <li>string.pattern: ^[a-zA-Z0-9_-]&#43;$</li>
+                    
+                    </ul>
+                  </td>
+                </tr>
+              
+              </tbody>
+            </table>
+            
+          
+
+        
+      
+        <h3 id="notify.AddUserResp">AddUserResp</h3>
+        <p></p>
+
+        
+          <table class="field-table">
+            <thead>
+              <tr><td>Field</td><td>Type</td><td>Label</td><td>Description</td></tr>
+            </thead>
+            <tbody>
+              
+                <tr>
+                  <td>id</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>username</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>email</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>phone</td>
+                  <td><a href="#string">string</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+                <tr>
+                  <td>createdAt</td>
+                  <td><a href="#google.protobuf.Timestamp">google.protobuf.Timestamp</a></td>
+                  <td></td>
+                  <td><p> </p></td>
+                </tr>
+              
+            </tbody>
+          </table>
+
+          
+
+        
       
         <h3 id="notify.Channels">Channels</h3>
         <p></p>
@@ -775,6 +955,13 @@
           <tbody>
             
               <tr>
+                <td>AddUser</td>
+                <td><a href="#notify.AddUserReq">AddUserReq</a></td>
+                <td><a href="#notify.AddUserResp">AddUserResp</a></td>
+                <td><p></p></td>
+              </tr>
+            
+              <tr>
                 <td>EditPreferences</td>
                 <td><a href="#notify.EditPreferencesReq">EditPreferencesReq</a></td>
                 <td><a href="#notify.EditPreferencesResp">EditPreferencesResp</a></td>
@@ -798,6 +985,16 @@
               </tr>
             </thead>
             <tbody>
+            
+              
+              
+              <tr>
+                <td>AddUser</td>
+                <td>POST</td>
+                <td>/v1/add_user</td>
+                <td>*</td>
+              </tr>
+              
             
               
               

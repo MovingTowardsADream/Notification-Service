@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
 
@@ -35,10 +36,11 @@ func WithPort(port int) Option {
 	}
 }
 
-func NewMockServer(notifySend notify.SendersNotify, editInfo users.EditInfo, options ...Option) *MockServer {
+func NewMockServer(notifySend notify.SendersNotify, editInfo users.UserInfo, options ...Option) *MockServer {
 	s := &MockServer{
-		port:  _defaultMockServerPort,
-		errCh: make(chan error),
+		port:       _defaultMockServerPort,
+		errCh:      make(chan error),
+		cancelOnce: &sync.Once{},
 	}
 	for _, option := range options {
 		option(s)
@@ -68,7 +70,6 @@ func (s *MockServer) ListenAndServe(ctx context.Context) error {
 func (s *MockServer) Serve(ctx context.Context, listener net.Listener) error {
 	ctx, cancel := context.WithCancel(ctx)
 
-	s.cancelOnce = &sync.Once{}
 	s.cancelFunc = cancel
 
 	go func(ctx context.Context, listener net.Listener) {
@@ -85,6 +86,8 @@ func (s *MockServer) Serve(ctx context.Context, listener net.Listener) error {
 
 		close(s.errCh)
 	}()
+
+	time.Sleep(1 * time.Second)
 
 	return nil
 }

@@ -5,10 +5,11 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
-
-	"Notification_Service/tests/gotests"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
+	"Notification_Service/tests/gotests"
 )
 
 type EditPreferencesSuite struct {
@@ -22,8 +23,17 @@ func (s *EditPreferencesSuite) SetupTest() {
 func (s *EditPreferencesSuite) TestSuccess() {
 	ctx := context.Background()
 
+	respCreateUser, err := s.Repo.Clients().Users.AddUser(ctx, &notifyv1.AddUserReq{
+		Username: "beliash",
+		Email:    "beliash@mail.ru",
+		Phone:    "+79124052485",
+		Password: "secret_password",
+	})
+
+	s.Require().NoError(err)
+
 	respEditPref, err := s.Repo.Clients().Users.EditPreferences(ctx, &notifyv1.EditPreferencesReq{
-		UserID: "5c036da04d6e74d3b885a2389a2bbb17",
+		UserID: respCreateUser.Id,
 		Preferences: &notifyv1.Preferences{
 			Mail: &notifyv1.MailApproval{
 				Approval: true,
@@ -41,8 +51,17 @@ func (s *EditPreferencesSuite) TestSuccess() {
 func (s *EditPreferencesSuite) TestNotAllPreferences() {
 	ctx := context.Background()
 
+	respCreateUser, err := s.Repo.Clients().Users.AddUser(ctx, &notifyv1.AddUserReq{
+		Username: "semen",
+		Email:    "semen@mail.ru",
+		Phone:    "+79806745634",
+		Password: "secret_password",
+	})
+
+	s.Require().NoError(err)
+
 	respEditPref, err := s.Repo.Clients().Users.EditPreferences(ctx, &notifyv1.EditPreferencesReq{
-		UserID: "5c036da04d6e74d3b885a2389a2bbb17",
+		UserID: respCreateUser.Id,
 		Preferences: &notifyv1.Preferences{
 			Mail: &notifyv1.MailApproval{
 				Approval: true,
@@ -58,7 +77,7 @@ func (s *EditPreferencesSuite) TestNotFound() {
 	ctx := context.Background()
 
 	_, err := s.Repo.Clients().Users.EditPreferences(ctx, &notifyv1.EditPreferencesReq{
-		UserID: "5c036da04d6e74d3b885a2389a2bbb17",
+		UserID: "unknown_id",
 		Preferences: &notifyv1.Preferences{
 			Mail: &notifyv1.MailApproval{
 				Approval: true,
@@ -70,6 +89,7 @@ func (s *EditPreferencesSuite) TestNotFound() {
 	})
 
 	s.Require().Error(err)
+	s.Require().Equal(status.Code(err), codes.NotFound)
 }
 
 func TestUserPrefSuite(t *testing.T) {

@@ -25,6 +25,7 @@ type (
 		PhoneSender   `yaml:"phone_sender"`
 		Observability `yaml:"observability"`
 		Log           `yaml:"logger"`
+		Security      `yaml:"security"`
 	}
 
 	App struct {
@@ -106,6 +107,10 @@ type (
 	Log struct {
 		Level string  `env:"LOG_LEVEL" env-default:"testing" yaml:"logLevel"`
 		Path  *string `env:"LOG_PATH" yaml:"logPath"`
+	}
+
+	Security struct {
+		PasswordSalt string `env:"PASSWORD_SALT"`
 	}
 )
 

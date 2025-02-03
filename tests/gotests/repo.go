@@ -2,6 +2,11 @@ package gotests
 
 import (
 	"context"
+	"errors"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 
 	"Notification_Service/internal/infrastructure/config"
 	rmqclient "Notification_Service/internal/infrastructure/messaging/rabbitmq/client"
@@ -9,6 +14,8 @@ import (
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	"Notification_Service/pkg/logger"
 )
+
+const pathToMigrate = "../../../migrations"
 
 type Repository interface {
 	UnitName() string
@@ -114,6 +121,8 @@ func (r *RepositoryImpl) Start(ctx context.Context) error {
 		panic("storage ping error" + err.Error())
 	}
 
+	migrateUp(pathToMigrate, r.config.Storage.URL)
+
 	r.mesClient, err = rmqclient.New(
 		r.config.Messaging.URL,
 		r.config.Messaging.Server.RPCExchange,
@@ -146,6 +155,23 @@ func (r *RepositoryImpl) Start(ctx context.Context) error {
 	return nil
 }
 
-func (r *RepositoryImpl) Stop(ctx context.Context) error {
+func (r *RepositoryImpl) Stop(_ context.Context) error {
 	return r.cancel()
+}
+
+func migrateUp(migratePath, url string) {
+	m, err := migrate.New(
+		"file://"+migratePath,
+		url,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	if err := m.Up(); err != nil {
+		if errors.Is(err, migrate.ErrNoChange) {
+			return
+		}
+		panic(err)
+	}
 }

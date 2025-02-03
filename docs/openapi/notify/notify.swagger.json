@@ -19,6 +19,38 @@
     "application/json"
   ],
   "paths": {
+    "/v1/add_user": {
+      "post": {
+        "operationId": "Users_AddUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/notifyAddUserResp"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/notifyAddUserReq"
+            }
+          }
+        ],
+        "tags": [
+          "Users"
+        ]
+      }
+    },
     "/v1/edit_preferences": {
       "post": {
         "operationId": "Users_EditPreferences",
@@ -85,6 +117,47 @@
     }
   },
   "definitions": {
+    "notifyAddUserReq": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "preferences": {
+          "$ref": "#/definitions/notifyPreferences"
+        }
+      }
+    },
+    "notifyAddUserResp": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
     "notifyChannels": {
       "type": "object",
       "properties": {

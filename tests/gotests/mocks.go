@@ -10,6 +10,7 @@ import (
 	gwmessaging "Notification_Service/internal/infrastructure/gateway/messaging"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
+	"Notification_Service/pkg/hasher"
 	"Notification_Service/tests/gotests/mocks"
 )
 
@@ -49,7 +50,10 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	gateway := gwmessaging.NewNotifyGateway(repo.MesClient())
 
 	notifySender := usecase.NewNotifySender(repo.Logger(), usersRepo, gateway)
-	editInfo := usecase.NewEditInfo(repo.Logger(), usersRepo)
+
+	hash := hasher.NewSHA1Hasher(repo.Config().Security.PasswordSalt)
+
+	editInfo := usecase.NewUserInfo(repo.Logger(), usersRepo, hash)
 
 	mockServer := NewMockServer(notifySender, editInfo)
 

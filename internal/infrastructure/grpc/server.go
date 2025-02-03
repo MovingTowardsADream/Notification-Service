@@ -24,7 +24,7 @@ type Server struct {
 	port       int
 }
 
-func New(log logger.Logger, m *metrics.Metrics, notifySender notify.SendersNotify, editInfo users.EditInfo, opts ...Option) *Server {
+func New(log logger.Logger, m *metrics.Metrics, notifySender notify.SendersNotify, editInfo users.UserInfo, opts ...Option) *Server {
 	s := &Server{
 		log:  log,
 		port: _defaultPort,

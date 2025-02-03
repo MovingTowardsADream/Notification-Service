@@ -17,6 +17,7 @@ import (
 	"Notification_Service/internal/infrastructure/observ/trace"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
+	"Notification_Service/pkg/hasher"
 	"Notification_Service/pkg/logger"
 	"Notification_Service/pkg/utils"
 )
@@ -80,8 +81,10 @@ func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 
 	gateway := gwmessaging.NewNotifyGateway(mesClient)
 
+	hash := hasher.NewSHA1Hasher(cfg.Security.PasswordSalt)
+
 	notifySender := usecase.NewNotifySender(l, usersRepo, gateway)
-	editInfo := usecase.NewEditInfo(l, usersRepo)
+	editInfo := usecase.NewUserInfo(l, usersRepo, hash)
 
 	reg := prometheus.NewRegistry()
 	m := metrics.New(reg, cfg.App.Name)

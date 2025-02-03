@@ -6,6 +6,7 @@ option go_package = "./notify;notifyv1";
 
 import "validate/validate.proto";
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 service Notify {
   rpc SendMessage (SendMessageReq) returns (SendMessageResp){
@@ -47,6 +48,12 @@ message SendMessageResp {
 }
 
 service Users {
+  rpc AddUser (AddUserReq) returns (AddUserResp) {
+    option (google.api.http) = {
+      post: "/v1/add_user"
+      body: "*"
+    };
+  }
   rpc EditPreferences (EditPreferencesReq) returns (EditPreferencesResp) {
     option (google.api.http) = {
       post: "/v1/edit_preferences"
@@ -55,17 +62,33 @@ service Users {
   }
 }
 
+message Preferences {
+  optional MailApproval mail = 1;
+  optional PhoneApproval phone = 2;
+}
+
+message AddUserReq {
+  string username = 1 [(validate.rules).string = {min_len: 1, pattern: "^[a-zA-Z0-9_-]+$"}];
+  string email = 2 [(validate.rules).string = {min_len: 1, pattern: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"}];
+  string phone = 3 [(validate.rules).string = {min_len: 1, pattern: "^[+]?[0-9]+$"}];
+  string password = 4 [(validate.rules).string = {min_len: 8, pattern: "^[a-zA-Z0-9_-]+$"}];
+  optional Preferences preferences = 5;
+}
+
+message AddUserResp {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+  string phone = 4;
+  google.protobuf.Timestamp createdAt = 5;
+}
+
 message MailApproval {
   bool approval = 1;
 }
 
 message PhoneApproval {
   bool approval = 1;
-}
-
-message Preferences {
-  optional MailApproval mail = 1;
-  optional PhoneApproval phone = 2;
 }
 
 message EditPreferencesReq {

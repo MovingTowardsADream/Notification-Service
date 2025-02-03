@@ -21,8 +21,17 @@ func (s *SendNotifySuite) SetupTest() {
 func (s *SendNotifySuite) TestSuccess() {
 	ctx := context.Background()
 
+	respCreateUser, err := s.Repo.Clients().Users.AddUser(ctx, &notifyv1.AddUserReq{
+		Username: "termin",
+		Email:    "termin@mail.ru",
+		Phone:    "+79248538526",
+		Password: "secret_password",
+	})
+
+	s.Require().NoError(err)
+
 	respSendNotify, err := s.Repo.Clients().Notify.SendMessage(ctx, &notifyv1.SendMessageReq{
-		UserID:     "5c036da04d6e74d3b885a2389a2bbb17",
+		UserID:     respCreateUser.Id,
 		NotifyType: 1,
 		Channels: &notifyv1.Channels{
 			Mail: &notifyv1.MailNotify{
@@ -43,7 +52,7 @@ func (s *SendNotifySuite) TestNotFound() {
 	ctx := context.Background()
 
 	_, err := s.Repo.Clients().Notify.SendMessage(ctx, &notifyv1.SendMessageReq{
-		UserID:     "5c036da04d6e74d3b885a2389a2bbb17",
+		UserID:     "unknown_id",
 		NotifyType: 1,
 		Channels: &notifyv1.Channels{
 			Mail: &notifyv1.MailNotify{

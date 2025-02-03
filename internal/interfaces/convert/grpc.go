@@ -53,3 +53,32 @@ func EditPreferencesReqToUserPreferences(req *notifyv1.EditPreferencesReq) *dto.
 
 	return preferences
 }
+
+func AddUserReqToUser(req *notifyv1.AddUserReq) *dto.User {
+	if req == nil {
+		return nil
+	}
+
+	user := &dto.User{
+		Username: req.GetUsername(),
+		Email:    req.GetEmail(),
+		Phone:    req.GetPhone(),
+		Password: req.GetPassword(),
+	}
+
+	if req.Preferences != nil {
+		if req.Preferences.Mail != nil {
+			user.Preferences.Mail = &dto.MailPreference{
+				Approval: req.GetPreferences().GetMail().GetApproval(),
+			}
+		}
+
+		if req.Preferences.Phone != nil {
+			user.Preferences.Phone = &dto.PhonePreference{
+				Approval: req.GetPreferences().GetPhone().GetApproval(),
+			}
+		}
+	}
+
+	return user
+}

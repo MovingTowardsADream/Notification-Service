@@ -12,6 +12,8 @@ func mappingErrors(err error) (bool, error) {
 		return true, ErrNotFound
 	case errors.Is(err, repoerr.ErrCanceled):
 		return true, ErrTimeout
+	case errors.Is(err, repoerr.ErrAlreadyExists):
+		return true, ErrAlreadyExists
 	default:
 		return false, err
 	}
