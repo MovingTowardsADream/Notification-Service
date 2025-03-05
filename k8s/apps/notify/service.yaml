@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: notify
+spec:
+  type: ClusterIP
+  selector:
+    app: notify
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

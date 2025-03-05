@@ -19,7 +19,7 @@ spec:
             - containerPort: 5432
           envFrom:
             - secretRef:
-                name: secret
+                name: notify-secret
           volumeMounts:
             - name: postgres-storage
               mountPath: /var/lib/postgresql/data

@@ -20,7 +20,7 @@ spec:
             - containerPort: 15672
           envFrom:
             - secretRef:
-                name: secret
+                name: notify-secret
           volumeMounts:
             - name: data-volume
               mountPath: /var/lib/rabbitmq
