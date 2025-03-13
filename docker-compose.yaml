@@ -33,8 +33,8 @@ services:
     networks:
       - notify_network
     volumes:
-      - ${CONFIG_PATH}/loki/loki-config-map.yaml.${CONF_LEVEL}:/etc/loki/local-config-map.yaml
-    command: -config.file=/etc/loki/local-config-map.yaml
+      - ${CONFIG_PATH}/loki/loki-config.yaml.${CONF_LEVEL}:/etc/loki/local-config-map.yaml
+    command: -config.file=/etc/loki/local-config.yaml
 
   promtail:
     image: grafana/promtail:2.4.0
@@ -44,7 +44,7 @@ services:
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers
       - /tmp:/tmp
-      - ${CONFIG_PATH}/promtail/promtail-config-map.yaml.${CONF_LEVEL}:/etc/promtail/config.yml
+      - ${CONFIG_PATH}/promtail/promtail-config.yaml.${CONF_LEVEL}:/etc/promtail/config.yml
     command:
       - --config.file=/etc/promtail/config.yml
 
@@ -58,7 +58,7 @@ services:
     networks:
       - notify_network
     volumes:
-      - ${CONFIG_PATH}/tempo/tempo-config-map.yaml.${CONF_LEVEL}:/etc/tempo.yaml
+      - ${CONFIG_PATH}/tempo/tempo-config.yaml.${CONF_LEVEL}:/etc/tempo.yaml
     command:
       - --config.file=/etc/tempo.yaml
 
@@ -70,7 +70,7 @@ services:
     networks:
       - notify_network
     volumes:
-      - ${CONFIG_PATH}/prometheus/prometheus-config-map.yaml.${CONF_LEVEL}:/etc/prometheus/prometheus.yml
+      - ${CONFIG_PATH}/prometheus/prometheus-config.yaml.${CONF_LEVEL}:/etc/prometheus/prometheus.yml
 
   grafana:
     image: grafana/grafana:10.1.0
