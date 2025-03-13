@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS history_email_notify
 (
     id BIGSERIAL PRIMARY KEY,
     request_id TEXT NOT NULL UNIQUE,
+    notify_type SMALLINT NOT NULL CHECK (notify_type >= 0 AND notify_type <= 2),
     subject TEXT,
     body TEXT,
     status TEXT CHECK (status IN ('processed', 'failed')),
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS history_phone_notify
 (
     id BIGSERIAL PRIMARY KEY,
     request_id TEXT NOT NULL UNIQUE,
+    notify_type SMALLINT NOT NULL CHECK (notify_type >= 0 AND notify_type <= 2),
     subject TEXT NULL,
     body TEXT NULL,
     status TEXT NOT NULL CHECK (status IN ('processed', 'failed')),
