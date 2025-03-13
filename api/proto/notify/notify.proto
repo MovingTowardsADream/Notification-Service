@@ -56,7 +56,7 @@ service Users {
   }
   rpc EditPreferences (EditPreferencesReq) returns (EditPreferencesResp) {
     option (google.api.http) = {
-      post: "/v1/edit_preferences"
+      put: "/v1/edit_preferences"
       body: "*"
     };
   }
