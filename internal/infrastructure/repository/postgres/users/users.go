@@ -1,4 +1,4 @@
-package postgres
+package users
 
 import (
 	"context"
@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 
 	"Notification_Service/internal/domain/models"
+	"Notification_Service/internal/infrastructure/repository/postgres"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -19,10 +20,10 @@ const (
 const tracerName = "userRepo"
 
 type UsersRepo struct {
-	storage *Postgres
+	storage *postgres.Postgres
 }
 
-func NewUsersRepo(storage *Postgres) *UsersRepo {
+func NewUsersRepo(storage *postgres.Postgres) *UsersRepo {
 	return &UsersRepo{storage: storage}
 }
 
@@ -40,7 +41,7 @@ func (ur *UsersRepo) GetUserCommunication(
 	span.SetAttributes(attribute.String("user.id", communication.ID))
 
 	sql, args, _ := ur.storage.Builder.
-		Select("users.id", "users.email", "users.phone", "notifications.email_notify", "notifications.phone_notify").
+		Select("users.id", "notifications.email_notify", "notifications.phone_notify").
 		From(usersTable).
 		InnerJoin("notifications on users.id = notifications.user_id").
 		Where("users.id = ?", communication.ID).
@@ -50,14 +51,12 @@ func (ur *UsersRepo) GetUserCommunication(
 
 	err := ur.storage.Pool.QueryRow(ctx, sql, args...).Scan(
 		&userCommunication.ID,
-		&userCommunication.Email,
-		&userCommunication.Phone,
 		&userCommunication.MailPref,
 		&userCommunication.PhonePref,
 	)
 	if err != nil {
 		span.RecordError(err)
-		return nil, fmt.Errorf("%s - r.Pool.QueryRow: %w", op, mappingErrors(err))
+		return nil, fmt.Errorf("%s - r.Pool.QueryRow: %w", op, postgres.MappingErrors(err))
 	}
 
 	return &userCommunication, nil
@@ -76,7 +75,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	tx, err := ur.storage.Pool.Begin(ctx)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("%s - r.Pool.Begin: %w", op, mappingErrors(err))
+		return fmt.Errorf("%s - r.Pool.Begin: %w", op, postgres.MappingErrors(err))
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -90,7 +89,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	err = tx.QueryRow(ctx, sql, args...).Scan(&emailNotify, &phoneNotify)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("%s - tx.QueryRow: %w", op, mappingErrors(err))
+		return fmt.Errorf("%s - tx.QueryRow: %w", op, postgres.MappingErrors(err))
 	}
 
 	if preferences.Preferences.Mail == nil {
@@ -114,13 +113,13 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	_, err = tx.Exec(ctx, sql, args...)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("%s - tx.Exec: %w", op, mappingErrors(err))
+		return fmt.Errorf("%s - tx.Exec: %w", op, postgres.MappingErrors(err))
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		span.RecordError(err)
-		return fmt.Errorf("%s - tx.Commit: %w", op, mappingErrors(err))
+		return fmt.Errorf("%s - tx.Commit: %w", op, postgres.MappingErrors(err))
 	}
 
 	return nil
@@ -137,7 +136,7 @@ func (ur *UsersRepo) Create(ctx context.Context, userData *dto.User) (*models.Us
 	tx, err := ur.storage.Pool.Begin(ctx)
 	if err != nil {
 		span.RecordError(err)
-		return nil, fmt.Errorf("%s - r.Pool.Begin: %w", op, mappingErrors(err))
+		return nil, fmt.Errorf("%s - r.Pool.Begin: %w", op, postgres.MappingErrors(err))
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
 
@@ -154,7 +153,7 @@ func (ur *UsersRepo) Create(ctx context.Context, userData *dto.User) (*models.Us
 
 	if err != nil {
 		span.RecordError(err)
-		return nil, fmt.Errorf("UserRepo.Create - ur.storage.Pool.QueryRow: %w", mappingErrors(err))
+		return nil, fmt.Errorf("UserRepo.Create - ur.storage.Pool.QueryRow: %w", postgres.MappingErrors(err))
 	}
 
 	var emailNotify, phoneNotify bool
@@ -177,13 +176,13 @@ func (ur *UsersRepo) Create(ctx context.Context, userData *dto.User) (*models.Us
 
 	if err != nil {
 		span.RecordError(err)
-		return nil, fmt.Errorf("UserRepo.Create - ur.storage.Pool.QueryRow: %w", mappingErrors(err))
+		return nil, fmt.Errorf("UserRepo.Create - ur.storage.Pool.QueryRow: %w", postgres.MappingErrors(err))
 	}
 
 	err = tx.Commit(ctx)
 	if err != nil {
 		span.RecordError(err)
-		return nil, fmt.Errorf("%s - tx.Commit: %w", op, mappingErrors(err))
+		return nil, fmt.Errorf("%s - tx.Commit: %w", op, postgres.MappingErrors(err))
 	}
 
 	return user, nil

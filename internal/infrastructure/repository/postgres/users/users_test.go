@@ -1,4 +1,4 @@
-package postgres_test
+package users_test
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"Notification_Service/internal/domain/models"
 	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 	"Notification_Service/internal/infrastructure/repository/postgres"
+	"Notification_Service/internal/infrastructure/repository/postgres/users"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -40,10 +41,10 @@ func TestUsersRepoGetUserCommunication(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
-				rows := pgxmock.NewRows([]string{"id", "email", "phone", "email_notify", "phone_notify"}).
-					AddRow(args.communication.ID, "boris_johnson@gmail.com", "+447975556677", true, false)
+				rows := pgxmock.NewRows([]string{"id", "email_notify", "phone_notify"}).
+					AddRow(args.communication.ID, true, false)
 
-				m.ExpectQuery(`SELECT users.id, users.email, users.phone, notifications.email_notify, notifications.phone_notify` +
+				m.ExpectQuery(`SELECT users.id, notifications.email_notify, notifications.phone_notify` +
 					` FROM users INNER JOIN notifications on users.id = notifications.user_id` +
 					` WHERE users.id = \$1`).
 					WithArgs(args.communication.ID).
@@ -51,8 +52,6 @@ func TestUsersRepoGetUserCommunication(t *testing.T) {
 			},
 			want: &dto.UserCommunication{
 				ID:        "72a187b57a357b83216d0018aa47d8c2",
-				Email:     "boris_johnson@gmail.com",
-				Phone:     "+447975556677",
 				MailPref:  true,
 				PhonePref: false,
 			},
@@ -67,9 +66,9 @@ func TestUsersRepoGetUserCommunication(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
-				rows := pgxmock.NewRows([]string{"id", "email", "phone", "email_notify", "phone_notify"})
+				rows := pgxmock.NewRows([]string{"id", "email_notify", "phone_notify"})
 
-				m.ExpectQuery(`SELECT users.id, users.email, users.phone, notifications.email_notify, notifications.phone_notify` +
+				m.ExpectQuery(`SELECT users.id, notifications.email_notify, notifications.phone_notify` +
 					` FROM users INNER JOIN notifications on users.id = notifications.user_id` +
 					` WHERE users.id = \$1`).
 					WithArgs(args.communication.ID).
@@ -91,7 +90,7 @@ func TestUsersRepoGetUserCommunication(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
-				m.ExpectQuery(`SELECT users.id, users.email, users.phone, notifications.email_notify, notifications.phone_notify` +
+				m.ExpectQuery(`SELECT users.id, notifications.email_notify, notifications.phone_notify` +
 					` FROM users INNER JOIN notifications on users.id = notifications.user_id` +
 					` WHERE users.id = \$1`).
 					WithArgs(args.communication.ID).
@@ -112,7 +111,7 @@ func TestUsersRepoGetUserCommunication(t *testing.T) {
 				Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 				Pool:    poolMock,
 			}
-			userRepoMock := postgres.NewUsersRepo(postgresMock)
+			userRepoMock := users.NewUsersRepo(postgresMock)
 
 			resp, err := userRepoMock.GetUserCommunication(tc.args.ctx, tc.args.communication)
 			if tc.wantErr != nil {
@@ -327,7 +326,7 @@ func TestUsersRepoEditPreferences(t *testing.T) {
 				Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 				Pool:    poolMock,
 			}
-			userRepoMock := postgres.NewUsersRepo(postgresMock)
+			userRepoMock := users.NewUsersRepo(postgresMock)
 
 			err := userRepoMock.EditPreferences(tc.args.ctx, tc.args.preferences)
 			if tc.wantErr != nil {
@@ -524,7 +523,7 @@ func TestUsersRepoCreate(t *testing.T) {
 				Builder: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 				Pool:    poolMock,
 			}
-			userRepoMock := postgres.NewUsersRepo(postgresMock)
+			userRepoMock := users.NewUsersRepo(postgresMock)
 
 			user, err := userRepoMock.Create(tc.args.ctx, tc.args.userData)
 			if tc.wantErr != nil {

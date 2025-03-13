@@ -16,6 +16,7 @@ import (
 	"Notification_Service/internal/infrastructure/observ/metrics"
 	"Notification_Service/internal/infrastructure/observ/trace"
 	"Notification_Service/internal/infrastructure/repository/postgres"
+	"Notification_Service/internal/infrastructure/repository/postgres/users"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
 	"Notification_Service/pkg/hasher"
 	"Notification_Service/pkg/logger"
@@ -77,7 +78,7 @@ func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 		panic("trace provider connection error" + err.Error())
 	}
 
-	usersRepo := postgres.NewUsersRepo(storage)
+	usersRepo := users.NewUsersRepo(storage)
 
 	gateway := gwmessaging.NewNotifyGateway(mesClient)
 

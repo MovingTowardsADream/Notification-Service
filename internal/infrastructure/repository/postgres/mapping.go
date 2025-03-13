@@ -10,7 +10,7 @@ import (
 	repoerr "Notification_Service/internal/infrastructure/repository/errors"
 )
 
-func mappingErrors(err error) error {
+func MappingErrors(err error) error {
 	var pgErr *pgconn.PgError
 
 	switch {

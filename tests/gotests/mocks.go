@@ -8,7 +8,7 @@ import (
 
 	"Notification_Service/internal/application/usecase"
 	gwmessaging "Notification_Service/internal/infrastructure/gateway/messaging"
-	"Notification_Service/internal/infrastructure/repository/postgres"
+	"Notification_Service/internal/infrastructure/repository/postgres/users"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
 	"Notification_Service/pkg/hasher"
 	"Notification_Service/tests/gotests/mocks"
@@ -45,7 +45,7 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 		panic(err)
 	}
 
-	usersRepo := postgres.NewUsersRepo(repo.Storage())
+	usersRepo := users.NewUsersRepo(repo.Storage())
 
 	gateway := gwmessaging.NewNotifyGateway(repo.MesClient())
 
