@@ -1,5 +1,7 @@
 include .env
 
+NAMESPACE = default
+
 .PHONY: compose-up
 compose-up:
 	docker compose up --build -d postgres rabbitmq loki promtail grafana
