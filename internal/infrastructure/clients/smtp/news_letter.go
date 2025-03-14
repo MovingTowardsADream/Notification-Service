@@ -23,7 +23,7 @@ func (uc *WorkerMail) SendMailLetter(_ context.Context, notify dto.MailDate) err
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", uc.sender.Params.Username)
-	m.SetHeader("To", notify.Mail)
+	//m.SetHeader("To", notify.Mail)
 	m.SetHeader("Subject", notify.Subject)
 	m.SetBody("text/html", notify.Body)
 

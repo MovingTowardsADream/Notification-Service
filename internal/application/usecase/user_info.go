@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -11,10 +10,6 @@ import (
 	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/hasher"
 	"Notification_Service/pkg/logger"
-)
-
-const (
-	_defaultTimeout = 5 * time.Second
 )
 
 type Users interface {

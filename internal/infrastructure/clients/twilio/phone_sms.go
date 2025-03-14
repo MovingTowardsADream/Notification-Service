@@ -22,7 +22,7 @@ func (n *WorkerPhone) SendPhoneSMS(_ context.Context, notify dto.PhoneDate) erro
 
 	params := &resttwilio.CreateMessageParams{}
 	params.SetMessagingServiceSid(n.sender.ServiceSID)
-	params.SetTo(notify.Phone)
+	//params.SetTo(notify.Phone)
 	params.SetBody(notify.Body)
 
 	if _, err := n.sender.RestClient.Api.CreateMessage(params); err != nil {

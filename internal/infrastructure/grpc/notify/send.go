@@ -26,19 +26,19 @@ func (s *sendNotifyRoutes) SendMessage(ctx context.Context, req *notifyv1.SendMe
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
-	span.SetAttributes(attribute.String("user.id", req.GetUserID()))
-
 	if err := req.ValidateAll(); err != nil {
 		span.RecordError(err)
 		return nil, grpcerr.ErrInvalidArgument
 	}
 
-	dataNotify, err := convert.SendMessageReqToReqNotification(req)
-
+	dataNotify, err := convert.SendMessageReqToReqNotification(ctx, req)
 	if err != nil {
 		span.RecordError(err)
 		return nil, grpcerr.ErrInvalidArgument
 	}
+
+	span.SetAttributes(attribute.String("user.id", dataNotify.UserID))
+	span.SetAttributes(attribute.String("request.id", dataNotify.RequestID))
 
 	err = s.notifySend.SendToUser(ctx, dataNotify)
 

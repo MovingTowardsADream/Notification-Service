@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS history_email_notify
     notify_type SMALLINT NOT NULL CHECK (notify_type >= 0 AND notify_type <= 2),
     subject TEXT,
     body TEXT,
-    status TEXT CHECK (status IN ('processed', 'failed')),
+    status TEXT CHECK (status IN ('processed', 'failed', 'success')),
     user_id TEXT NOT NULL REFERENCES users(id)
 );
 
@@ -50,6 +50,6 @@ CREATE TABLE IF NOT EXISTS history_phone_notify
     notify_type SMALLINT NOT NULL CHECK (notify_type >= 0 AND notify_type <= 2),
     subject TEXT NULL,
     body TEXT NULL,
-    status TEXT NOT NULL CHECK (status IN ('processed', 'failed')),
+    status TEXT NOT NULL CHECK (status IN ('processed', 'failed', 'success')),
     user_id TEXT NOT NULL REFERENCES users(id)
 );

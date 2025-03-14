@@ -1,11 +1,16 @@
 package convert
 
 import (
+	"context"
+	"errors"
+
+	"google.golang.org/grpc/metadata"
+
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/internal/interfaces/dto"
 )
 
-func SendMessageReqToReqNotification(req *notifyv1.SendMessageReq) (*dto.ReqNotification, error) {
+func SendMessageReqToReqNotification(ctx context.Context, req *notifyv1.SendMessageReq) (*dto.ReqNotification, error) {
 	if req == nil {
 		return nil, nil
 	}
@@ -15,7 +20,13 @@ func SendMessageReqToReqNotification(req *notifyv1.SendMessageReq) (*dto.ReqNoti
 		return nil, err
 	}
 
+	requestID, err := getRequestID(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	return &dto.ReqNotification{
+		RequestID:  requestID,
 		UserID:     req.UserID,
 		NotifyType: notifyType,
 		Channels: dto.Channels{
@@ -81,4 +92,20 @@ func AddUserReqToUser(req *notifyv1.AddUserReq) *dto.User {
 	}
 
 	return user
+}
+
+const keyRequestID = "X-Request-ID"
+
+func getRequestID(ctx context.Context) (string, error) {
+	md, ok := metadata.FromIncomingContext(ctx)
+	if !ok {
+		return "", errors.New("metadata is not provided")
+	}
+
+	req := md.Get(keyRequestID)
+	if len(req) == 0 || req[0] == "" {
+		return "", errors.New("authorization token is not provided")
+	}
+
+	return req[0], nil
 }

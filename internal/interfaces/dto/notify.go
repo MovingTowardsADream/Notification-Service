@@ -16,14 +16,12 @@ type PhoneInfo struct {
 }
 
 type MailDate struct {
-	Mail       string            `json:"mail"`
 	NotifyType models.NotifyType `json:"notify_type"`
 	Subject    string            `json:"subject"`
 	Body       string            `json:"body"`
 }
 
 type PhoneDate struct {
-	Phone      string            `json:"phone"`
 	NotifyType models.NotifyType `json:"notify_type"`
 	Body       string            `json:"body"`
 }
@@ -43,7 +41,15 @@ type Channels struct {
 }
 
 type ReqNotification struct {
+	RequestID  string            `json:"request_id"`
 	UserID     string            `json:"user_id"`
 	NotifyType models.NotifyType `json:"notify_type"`
 	Channels   Channels          `json:"channels"`
+}
+
+type ProcessedNotify struct {
+	RequestID string     `json:"request_id"`
+	UserID    string     `json:"user_id"`
+	MailDate  *MailDate  `json:"mail_date"`
+	PhoneDate *PhoneDate `json:"phone_date"`
 }

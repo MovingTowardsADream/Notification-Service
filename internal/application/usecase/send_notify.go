@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -16,22 +15,21 @@ type UsersDataCommunication interface {
 	GetUserCommunication(ctx context.Context, communication *dto.IdentificationUserCommunication) (*dto.UserCommunication, error)
 }
 
-type NotifyGateway interface {
-	CreateMailNotify(ctx context.Context, notify *dto.MailDate) error
-	CreatePhoneNotify(ctx context.Context, notify *dto.PhoneDate) error
+type NotifyProcessed interface {
+	ProcessedNotify(ctx context.Context, processed *dto.ProcessedNotify) error
 }
 
 type NotifySender struct {
-	l             logger.Logger
-	usersDataComm UsersDataCommunication
-	gateway       NotifyGateway
+	l               logger.Logger
+	usersDataComm   UsersDataCommunication
+	notifyProcessed NotifyProcessed
 }
 
-func NewNotifySender(l logger.Logger, usersDataComm UsersDataCommunication, gateway NotifyGateway) *NotifySender {
+func NewNotifySender(l logger.Logger, usersDataComm UsersDataCommunication, processed NotifyProcessed) *NotifySender {
 	return &NotifySender{
-		l:             l,
-		usersDataComm: usersDataComm,
-		gateway:       gateway,
+		l:               l,
+		usersDataComm:   usersDataComm,
+		notifyProcessed: processed,
 	}
 }
 
@@ -48,12 +46,10 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 	defer span.End()
 
 	span.SetAttributes(attribute.String("user.id", notifyRequest.UserID))
-
-	ctxTimeout, cancel := context.WithTimeout(ctx, _defaultTimeout)
-	defer cancel()
+	span.SetAttributes(attribute.String("user.id", notifyRequest.RequestID))
 
 	userCommunication, err := n.usersDataComm.GetUserCommunication(
-		ctxTimeout,
+		ctx,
 		convert.ReqNotifyToIDUserCommunication(notifyRequest),
 	)
 
@@ -73,28 +69,24 @@ func (n *NotifySender) SendToUser(ctx context.Context, notifyRequest *dto.ReqNot
 		return err
 	}
 
-	if userCommunication.MailPref {
-		mailNotify := convert.ToMailDate(notifyRequest, userCommunication)
+	processedNotify := convert.ToProcessedNotify(notifyRequest, userCommunication)
 
-		err = n.gateway.CreateMailNotify(ctxTimeout, mailNotify)
+	err = n.notifyProcessed.ProcessedNotify(ctx, processedNotify)
 
-		if err != nil {
-			span.RecordError(err)
+	if err != nil {
+		span.RecordError(err)
 
-			return fmt.Errorf("%s - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", op, err)
+		if ok, err := mappingErrors(err); ok {
+			return err
 		}
-	}
 
-	if userCommunication.PhonePref {
-		phoneNotify := convert.ToPhoneDate(notifyRequest, userCommunication)
+		n.l.Error(
+			op,
+			n.l.Err(err),
+			logger.AnyAttr("trace-id", ctx.Value("trace-id").(string)),
+		)
 
-		err = n.gateway.CreatePhoneNotify(ctxTimeout, phoneNotify)
-
-		if err != nil {
-			span.RecordError(err)
-
-			return fmt.Errorf("%s - n.gateway.CreateNotifyMessageOnRabbitMQ: %w", op, err)
-		}
+		return err
 	}
 
 	return nil

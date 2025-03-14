@@ -14,18 +14,33 @@ func validateNotifyType(notifyType dto.NotifyType) (models.NotifyType, error) {
 	return models.NotifyType(notifyType), nil
 }
 
-func ToMailDate(notifyRequest *dto.ReqNotification, userCommunication *dto.UserCommunication) *dto.MailDate {
+func ToProcessedNotify(notifyRequest *dto.ReqNotification, userCommunication *dto.UserCommunication) *dto.ProcessedNotify {
+	procNotify := &dto.ProcessedNotify{
+		RequestID: notifyRequest.RequestID,
+		UserID:    notifyRequest.UserID,
+	}
+
+	if userCommunication.MailPref {
+		procNotify.MailDate = toMailDate(notifyRequest)
+	}
+
+	if userCommunication.PhonePref {
+		procNotify.PhoneDate = toPhoneDate(notifyRequest)
+	}
+
+	return procNotify
+}
+
+func toMailDate(notifyRequest *dto.ReqNotification) *dto.MailDate {
 	return &dto.MailDate{
-		Mail:       userCommunication.Email,
 		NotifyType: notifyRequest.NotifyType,
 		Subject:    notifyRequest.Channels.Mail.Subject,
 		Body:       notifyRequest.Channels.Mail.Body,
 	}
 }
 
-func ToPhoneDate(notifyRequest *dto.ReqNotification, userCommunication *dto.UserCommunication) *dto.PhoneDate {
+func toPhoneDate(notifyRequest *dto.ReqNotification) *dto.PhoneDate {
 	return &dto.PhoneDate{
-		Phone:      userCommunication.Phone,
 		NotifyType: notifyRequest.NotifyType,
 		Body:       notifyRequest.Channels.Phone.Body,
 	}
@@ -33,7 +48,6 @@ func ToPhoneDate(notifyRequest *dto.ReqNotification, userCommunication *dto.User
 
 func MailDateToMailInfo(mailNotify *dto.MailDate) dto.MailInfo {
 	return dto.MailInfo{
-		Mail:    mailNotify.Mail,
 		Subject: mailNotify.Subject,
 		Body:    mailNotify.Body,
 	}
@@ -41,7 +55,6 @@ func MailDateToMailInfo(mailNotify *dto.MailDate) dto.MailInfo {
 
 func PhoneDateToPhoneInfo(phoneNotify *dto.PhoneDate) dto.PhoneInfo {
 	return dto.PhoneInfo{
-		Phone: phoneNotify.Phone,
-		Body:  phoneNotify.Body,
+		Body: phoneNotify.Body,
 	}
 }
