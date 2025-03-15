@@ -31,6 +31,12 @@ func main() {
 	application := app.New(ctx, log, cfg)
 
 	go func() {
+		if errOutbox := application.OutboxWorker.WorkerRun(); errOutbox != nil {
+			log.Error("outboxWorker error: ", log.Err(errOutbox))
+		}
+	}()
+
+	go func() {
 		if errServ := application.MetricsServer.Run(); errServ != nil {
 			log.Error("server with metrics was shut down due to an error: ", log.Err(errServ))
 		}
@@ -61,6 +67,8 @@ func main() {
 	if err := application.MessagingServer.Shutdown(); err != nil {
 		log.Error("messaging shutdown error", log.Err(err))
 	}
+
+	// TODO outbox stop
 
 	if err := application.Tracer.Close(ctx); err != nil {
 		log.Error("tracer shutdown error", log.Err(err))

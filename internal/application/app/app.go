@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -19,6 +20,8 @@ import (
 	"Notification_Service/internal/infrastructure/repository/postgres/notify"
 	"Notification_Service/internal/infrastructure/repository/postgres/users"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
+	"Notification_Service/internal/infrastructure/workers/outbox"
+	outboxhandler "Notification_Service/internal/infrastructure/workers/outbox/handlers"
 	"Notification_Service/pkg/hasher"
 	"Notification_Service/pkg/logger"
 	"Notification_Service/pkg/utils"
@@ -29,6 +32,7 @@ type App struct {
 	MessagingServer *rmqserver.Server
 	Storage         *postgres.Postgres
 	Tracer          *trace.TracesProvider
+	OutboxWorker    *outbox.Worker
 	MetricsServer   *metrics.Server
 }
 
@@ -83,7 +87,13 @@ func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 	notifyRepo := notify.NewNotifyRepo(storage)
 
 	gateway := gwmessaging.NewNotifyGateway(mesClient)
-	_ = gateway // TODO
+
+	outboxWorker := outbox.NewWorker(
+		map[string]outbox.WorkerRun{
+			"mail":  outboxhandler.NewMailWorker(l, notifyRepo, gateway, 1, 1*time.Second),
+			"phone": outboxhandler.NewPhoneWorker(l, notifyRepo, gateway, 1, 1*time.Second),
+		},
+	)
 
 	hash := hasher.NewSHA1Hasher(cfg.Security.PasswordSalt)
 
@@ -141,6 +151,7 @@ func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 		MessagingServer: mesServer,
 		Storage:         storage,
 		Tracer:          tracer,
+		OutboxWorker:    outboxWorker,
 		MetricsServer:   metricsServer,
 	}
 }
