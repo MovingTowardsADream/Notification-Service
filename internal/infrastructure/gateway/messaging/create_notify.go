@@ -25,7 +25,7 @@ func NewNotifyGateway(mes NotifyGatewayMessaging) *NotifyGateway {
 	return &NotifyGateway{mes}
 }
 
-func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.MailDate) error {
+func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailIdempotencyData) error {
 	const op = "NotifyGateway - CreateMailNotify"
 	const spanName = "CreateMailNotify"
 
@@ -33,12 +33,12 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.M
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
-	if mailNotify == nil {
+	if notify == nil {
 		return fmt.Errorf("%s - notify is nil", op)
 	}
 
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "mail_notify", mailNotify.NotifyType, convert.MailDateToMailInfo(mailNotify))
+		return gw.mes.RemoteCall(ctx, "mail_notify", notify.NotifyType, convert.MailIdempotencyDataToMailInfo(notify))
 	})
 
 	if err != nil {
@@ -48,7 +48,7 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, mailNotify *dto.M
 	return nil
 }
 
-func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto.PhoneDate) error {
+func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, notify *dto.PhoneIdempotencyData) error {
 	const op = "NotifyGateway - CreatePhoneNotify"
 	const spanName = "CreatePhoneNotify"
 
@@ -56,14 +56,14 @@ func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, phoneNotify *dto
 	ctx, span := tracer.Start(ctx, spanName)
 	defer span.End()
 
-	if phoneNotify == nil {
+	if notify == nil {
 		err := fmt.Errorf("%s - notify is nil", op)
 		span.RecordError(err)
 		return err
 	}
 
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "phone_notify", phoneNotify.NotifyType, convert.PhoneDateToPhoneInfo(phoneNotify))
+		return gw.mes.RemoteCall(ctx, "phone_notify", notify.NotifyType, convert.PhoneIdempotencyDataToPhoneInfo(notify))
 	})
 
 	if err != nil {

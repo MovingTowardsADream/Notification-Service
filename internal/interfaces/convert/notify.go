@@ -46,15 +46,17 @@ func toPhoneDate(notifyRequest *dto.ReqNotification) *dto.PhoneDate {
 	}
 }
 
-func MailDateToMailInfo(mailNotify *dto.MailDate) dto.MailInfo {
+func MailIdempotencyDataToMailInfo(mailNotify *dto.MailIdempotencyData) dto.MailInfo {
 	return dto.MailInfo{
-		Subject: mailNotify.Subject,
-		Body:    mailNotify.Body,
+		RequestID: mailNotify.RequestID,
+		Subject:   mailNotify.Subject,
+		Body:      mailNotify.Body,
 	}
 }
 
-func PhoneDateToPhoneInfo(phoneNotify *dto.PhoneDate) dto.PhoneInfo {
+func PhoneIdempotencyDataToPhoneInfo(phoneNotify *dto.PhoneIdempotencyData) dto.PhoneInfo {
 	return dto.PhoneInfo{
-		Body: phoneNotify.Body,
+		RequestID: phoneNotify.RequestID,
+		Body:      phoneNotify.Body,
 	}
 }
