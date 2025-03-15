@@ -56,8 +56,8 @@ func (s *SendNotifySuite) TestNotFound() {
 		NotifyType: 1,
 		Channels: &notifyv1.Channels{
 			Mail: &notifyv1.MailNotify{
-				Body:    "New alert!",
-				Subject: "<html>...</html>",
+				Subject: "New alert!",
+				Body:    "<html>...</html>",
 			},
 			Phone: &notifyv1.PhoneNotify{
 				Body: "New alert!",

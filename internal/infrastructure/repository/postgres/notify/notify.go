@@ -8,6 +8,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
+	"Notification_Service/internal/domain/models"
 	"Notification_Service/internal/infrastructure/repository/postgres"
 	"Notification_Service/internal/interfaces/dto"
 )
@@ -96,10 +97,10 @@ func (nr *NotifyRepo) GetBatchMailNotify(ctx context.Context, batch *dto.BatchNo
 	defer span.End()
 
 	sql, args, _ := nr.storage.Builder.
-		Select("history_mail_notify.request_id", "users.email", "notify_type", "subject", "body").
+		Select("history_email_notify.request_id", "users.email", "notify_type", "subject", "body").
 		From(mailHistoryTable).
-		Where("history_mail_notify.status = ?", "processed").
-		InnerJoin("users on history_mail_notify.user_id = users.id").
+		Where("history_email_notify.status = 'processed'").
+		InnerJoin("users on history_email_notify.user_id = users.id").
 		Limit(batch.BatchSize).
 		ToSql()
 
@@ -114,10 +115,13 @@ func (nr *NotifyRepo) GetBatchMailNotify(ctx context.Context, batch *dto.BatchNo
 
 	for rows.Next() {
 		var tmp dto.MailIdempotencyData
-		err := rows.Scan(&tmp.RequestID, &tmp.Mail, &tmp.NotifyType, &tmp.Subject, &tmp.Body)
+		var notifyType int
+
+		err := rows.Scan(&tmp.RequestID, &tmp.Mail, &notifyType, &tmp.Subject, &tmp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("%s - rows.Scan: %w", op, postgres.MappingErrors(err))
 		}
+		tmp.NotifyType = models.NotifyType(notifyType)
 		mailsData = append(mailsData, &tmp)
 	}
 
@@ -164,7 +168,7 @@ func (nr *NotifyRepo) GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchN
 	sql, args, _ := nr.storage.Builder.
 		Select("history_phone_notify.request_id", "users.phone", "notify_type", "body").
 		From(phoneHistoryTable).
-		Where("history_phone_notify.status = ?", "processed").
+		Where("history_phone_notify.status = 'processed'").
 		InnerJoin("users on history_phone_notify.user_id = users.id").
 		Limit(batch.BatchSize).
 		ToSql()
@@ -180,10 +184,13 @@ func (nr *NotifyRepo) GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchN
 
 	for rows.Next() {
 		var tmp dto.PhoneIdempotencyData
-		err := rows.Scan(&tmp.RequestID, &tmp.Phone, &tmp.NotifyType, &tmp.Body)
+		var notifyType int
+
+		err := rows.Scan(&tmp.RequestID, &tmp.Phone, &notifyType, &tmp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("%s - rows.Scan: %w", op, postgres.MappingErrors(err))
 		}
+		tmp.NotifyType = models.NotifyType(notifyType)
 		phonesData = append(phonesData, &tmp)
 	}
 
