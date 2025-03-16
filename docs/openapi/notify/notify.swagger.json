@@ -52,7 +52,7 @@
       }
     },
     "/v1/edit_preferences": {
-      "post": {
+      "put": {
         "operationId": "Users_EditPreferences",
         "responses": {
           "200": {
