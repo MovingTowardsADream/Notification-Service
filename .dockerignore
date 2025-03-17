@@ -1,0 +1,9 @@
+.git
+.gitignore
+docker-compose.yaml
+LICENSE
+README.md
+.golangci.yaml
+.mockery.yaml
+/docs
+.github
