@@ -14,11 +14,11 @@ import (
 //go:generate mockgen -source=worker.go -destination=../../../../tests/gotests/mocks/sender_mocks.go -package=mocks
 
 type SenderMail interface {
-	SendMailLetter(ctx context.Context, notify dto.MailDate) error
+	SendMailLetter(ctx context.Context, notify dto.MailInfo) error
 }
 
 type SenderPhone interface {
-	SendPhoneSMS(ctx context.Context, notify dto.PhoneDate) error
+	SendPhoneSMS(ctx context.Context, notify dto.PhoneInfo) error
 }
 
 type notifyWorkerRoutes struct {
@@ -38,7 +38,7 @@ func (r *notifyWorkerRoutes) createNewMailNotify() rmqserver.CallHandler {
 	const op = "amqp_rpc - createNewMailNotify"
 
 	return func(d *amqp.Delivery) (any, error) {
-		var request dto.MailDate
+		var request dto.MailInfo
 
 		if err := json.Unmarshal(d.Body, &request); err != nil {
 			return nil, fmt.Errorf("%s - json.Unmarshal: %w", op, err)
@@ -57,7 +57,7 @@ func (r *notifyWorkerRoutes) createNewPhoneNotify() rmqserver.CallHandler {
 	const op = "amqp_rpc - createNewPhoneNotify"
 
 	return func(d *amqp.Delivery) (any, error) {
-		var request dto.PhoneDate
+		var request dto.PhoneInfo
 
 		if err := json.Unmarshal(d.Body, &request); err != nil {
 			return nil, fmt.Errorf("%s - json.Unmarshal: %w", op, err)

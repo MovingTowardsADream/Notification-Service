@@ -8,8 +8,11 @@ import (
 
 	"Notification_Service/internal/application/usecase"
 	gwmessaging "Notification_Service/internal/infrastructure/gateway/messaging"
+	"Notification_Service/internal/infrastructure/repository/postgres/notify"
 	"Notification_Service/internal/infrastructure/repository/postgres/users"
 	amqprpc "Notification_Service/internal/infrastructure/workers/amqp_rpc"
+	"Notification_Service/internal/infrastructure/workers/outbox"
+	outboxhandler "Notification_Service/internal/infrastructure/workers/outbox/handlers"
 	"Notification_Service/pkg/hasher"
 	"Notification_Service/tests/gotests/mocks"
 )
@@ -46,10 +49,18 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	}
 
 	usersRepo := users.NewUsersRepo(repo.Storage())
+	notifyRepo := notify.NewNotifyRepo(repo.Storage())
 
 	gateway := gwmessaging.NewNotifyGateway(repo.MesClient())
 
-	notifySender := usecase.NewNotifySender(repo.Logger(), usersRepo, gateway)
+	_ = outbox.NewWorker(
+		map[string]outbox.WorkerRun{
+			"mail":  outboxhandler.NewMailWorker(repo.Logger(), notifyRepo, gateway),
+			"phone": outboxhandler.NewPhoneWorker(repo.Logger(), notifyRepo, gateway),
+		},
+	)
+
+	notifySender := usecase.NewNotifySender(repo.Logger(), usersRepo, notifyRepo)
 
 	hash := hasher.NewSHA1Hasher(repo.Config().Security.PasswordSalt)
 

@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -90,8 +89,8 @@ func New(ctx context.Context, l logger.Logger, cfg *config.Config) *App {
 
 	outboxWorker := outbox.NewWorker(
 		map[string]outbox.WorkerRun{
-			"mail":  outboxhandler.NewMailWorker(l, notifyRepo, gateway, 1, 1*time.Second),
-			"phone": outboxhandler.NewPhoneWorker(l, notifyRepo, gateway, 1, 1*time.Second),
+			"mail":  outboxhandler.NewMailWorker(l, notifyRepo, gateway),
+			"phone": outboxhandler.NewPhoneWorker(l, notifyRepo, gateway),
 		},
 	)
 

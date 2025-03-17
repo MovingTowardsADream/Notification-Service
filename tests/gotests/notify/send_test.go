@@ -68,6 +68,6 @@ func (s *SendNotifySuite) TestNotFound() {
 	s.Require().Error(err)
 }
 
-func TestUserPrefSuite(t *testing.T) {
+func TestSendNotifySuite(t *testing.T) {
 	suite.Run(t, &SendNotifySuite{gotests.BaseSuite{Name: t.Name()}})
 }

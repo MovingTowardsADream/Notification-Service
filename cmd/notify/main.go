@@ -68,13 +68,15 @@ func main() {
 		log.Error("messaging shutdown error", log.Err(err))
 	}
 
-	// TODO outbox stop
+	if err := application.OutboxWorker.Shutdown(); err != nil {
+		log.Error("outbox worker shutdown error", log.Err(err))
+	}
+
+	application.Storage.Close()
 
 	if err := application.Tracer.Close(ctx); err != nil {
 		log.Error("tracer shutdown error", log.Err(err))
 	}
-
-	application.Storage.Close()
 
 	if err := application.MetricsServer.Shutdown(ctx); err != nil {
 		log.Error("metrics server shutdown error", log.Err(err))

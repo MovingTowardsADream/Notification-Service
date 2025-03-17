@@ -9,6 +9,11 @@ import (
 	"Notification_Service/pkg/logger"
 )
 
+const (
+	defaultPhoneBatchSize = 10
+	defaultPhoneTimeout   = 1 * time.Second
+)
+
 type PhoneData interface {
 	GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.PhoneIdempotencyData, error)
 	ProcessedBatchPhoneNotify(ctx context.Context, keys []*dto.IdempotencyKey) error
@@ -18,27 +23,45 @@ type PhoneGateway interface {
 	CreatePhoneNotify(ctx context.Context, notify *dto.PhoneIdempotencyData) error
 }
 
+type PhoneOption func(worker *PhoneWorker)
+
+func PhoneBatchSize(batchSize uint64) PhoneOption {
+	return func(w *PhoneWorker) {
+		w.batchSize = batchSize
+	}
+}
+
+func PhoneTimeout(timeout time.Duration) PhoneOption {
+	return func(w *PhoneWorker) {
+		w.timeout = timeout
+	}
+}
+
 type PhoneWorker struct {
 	log       logger.Logger
 	phoneData PhoneData
 	gateway   PhoneGateway
 
-	ctx       context.Context
 	batchSize uint64
 	timeout   time.Duration
 	stop      chan struct{}
 }
 
-func NewPhoneWorker(log logger.Logger, phoneData PhoneData, gateway PhoneGateway, batchSize uint64, timeout time.Duration) *PhoneWorker {
-	return &PhoneWorker{
+func NewPhoneWorker(log logger.Logger, phoneData PhoneData, gateway PhoneGateway, opts ...PhoneOption) *PhoneWorker {
+	pw := &PhoneWorker{
 		log:       log,
 		phoneData: phoneData,
 		gateway:   gateway,
-		ctx:       context.Background(),
-		batchSize: batchSize,
-		timeout:   timeout,
+		batchSize: defaultPhoneBatchSize,
+		timeout:   defaultPhoneTimeout,
 		stop:      make(chan struct{}),
 	}
+
+	for _, opt := range opts {
+		opt(pw)
+	}
+
+	return pw
 }
 
 func (w *PhoneWorker) Run() error {
@@ -60,7 +83,7 @@ func (w *PhoneWorker) Run() error {
 func (w *PhoneWorker) worker() error {
 	const op = "PhoneWorker.worker()"
 
-	phoneData, err := w.phoneData.GetBatchPhoneNotify(w.ctx, &dto.BatchNotify{BatchSize: w.batchSize})
+	phoneData, err := w.phoneData.GetBatchPhoneNotify(context.Background(), &dto.BatchNotify{BatchSize: w.batchSize})
 
 	if err != nil {
 		w.log.Error(op, w.log.Err(err))
@@ -78,7 +101,7 @@ func (w *PhoneWorker) worker() error {
 		keys = append(keys, &dto.IdempotencyKey{RequestID: phone.RequestID})
 	}
 
-	err = w.phoneData.ProcessedBatchPhoneNotify(w.ctx, keys)
+	err = w.phoneData.ProcessedBatchPhoneNotify(context.Background(), keys)
 
 	if err != nil {
 		w.log.Error(op, w.log.Err(err))
@@ -86,4 +109,8 @@ func (w *PhoneWorker) worker() error {
 	}
 
 	return nil
+}
+
+func (w *PhoneWorker) Stop() {
+	close(w.stop)
 }

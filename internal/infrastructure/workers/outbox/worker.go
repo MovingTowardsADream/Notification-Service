@@ -2,6 +2,7 @@ package outbox
 
 type WorkerRun interface {
 	Run() error
+	Stop()
 }
 
 type Worker struct {
@@ -19,6 +20,13 @@ func (w *Worker) WorkerRun() error {
 		go func() {
 			_ = worker.Run()
 		}()
+	}
+	return nil
+}
+
+func (w *Worker) Shutdown() error {
+	for _, worker := range w.workers {
+		worker.Stop()
 	}
 	return nil
 }

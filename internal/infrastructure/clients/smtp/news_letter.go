@@ -17,13 +17,13 @@ func NewWorkerMail(smtp *SMTP) *WorkerMail {
 	return &WorkerMail{sender: smtp}
 }
 
-func (uc *WorkerMail) SendMailLetter(_ context.Context, notify dto.MailDate) error {
+func (uc *WorkerMail) SendMailLetter(_ context.Context, notify dto.MailInfo) error {
 	const op = "smtp - SendMailLetter"
 
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", uc.sender.Params.Username)
-	//m.SetHeader("To", notify.Mail)
+	m.SetHeader("To", notify.Mail)
 	m.SetHeader("Subject", notify.Subject)
 	m.SetBody("text/html", notify.Body)
 

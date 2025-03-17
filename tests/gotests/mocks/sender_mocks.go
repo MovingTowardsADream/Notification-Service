@@ -36,7 +36,7 @@ func (m *MockSenderMail) EXPECT() *MockSenderMailMockRecorder {
 }
 
 // SendMailLetter mocks base method.
-func (m *MockSenderMail) SendMailLetter(ctx context.Context, notify dto.MailDate) error {
+func (m *MockSenderMail) SendMailLetter(ctx context.Context, notify dto.MailInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendMailLetter", ctx, notify)
 	ret0, _ := ret[0].(error)
@@ -73,7 +73,7 @@ func (m *MockSenderPhone) EXPECT() *MockSenderPhoneMockRecorder {
 }
 
 // SendPhoneSMS mocks base method.
-func (m *MockSenderPhone) SendPhoneSMS(ctx context.Context, notify dto.PhoneDate) error {
+func (m *MockSenderPhone) SendPhoneSMS(ctx context.Context, notify dto.PhoneInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SendPhoneSMS", ctx, notify)
 	ret0, _ := ret[0].(error)

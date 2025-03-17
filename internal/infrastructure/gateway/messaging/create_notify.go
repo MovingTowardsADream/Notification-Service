@@ -34,7 +34,9 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailI
 	defer span.End()
 
 	if notify == nil {
-		return fmt.Errorf("%s - notify is nil", op)
+		err := fmt.Errorf("%s - notify is nil", op)
+		span.RecordError(err)
+		return err
 	}
 
 	err := wrapper(ctx, func() error {

@@ -17,12 +17,12 @@ func NewWorkerPhone(sender *Client) *WorkerPhone {
 	return &WorkerPhone{sender: sender}
 }
 
-func (n *WorkerPhone) SendPhoneSMS(_ context.Context, notify dto.PhoneDate) error {
+func (n *WorkerPhone) SendPhoneSMS(_ context.Context, notify dto.PhoneInfo) error {
 	const op = "twilio - SendPhoneSMS"
 
 	params := &resttwilio.CreateMessageParams{}
 	params.SetMessagingServiceSid(n.sender.ServiceSID)
-	//params.SetTo(notify.Phone)
+	params.SetTo(notify.Phone)
 	params.SetBody(notify.Body)
 
 	if _, err := n.sender.RestClient.Api.CreateMessage(params); err != nil {

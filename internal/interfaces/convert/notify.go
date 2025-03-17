@@ -49,6 +49,7 @@ func toPhoneDate(notifyRequest *dto.ReqNotification) *dto.PhoneDate {
 func MailIdempotencyDataToMailInfo(mailNotify *dto.MailIdempotencyData) dto.MailInfo {
 	return dto.MailInfo{
 		RequestID: mailNotify.RequestID,
+		Mail:      mailNotify.Mail,
 		Subject:   mailNotify.Subject,
 		Body:      mailNotify.Body,
 	}
@@ -57,6 +58,7 @@ func MailIdempotencyDataToMailInfo(mailNotify *dto.MailIdempotencyData) dto.Mail
 func PhoneIdempotencyDataToPhoneInfo(phoneNotify *dto.PhoneIdempotencyData) dto.PhoneInfo {
 	return dto.PhoneInfo{
 		RequestID: phoneNotify.RequestID,
+		Phone:     phoneNotify.Phone,
 		Body:      phoneNotify.Body,
 	}
 }
