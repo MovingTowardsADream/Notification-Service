@@ -1,0 +1,37 @@
+### Create user
+
+# curl -X POST http://localhost:8080/v1/add_user
+#-H "Content-Type: application/json"
+#-d '{
+#        "username": "test-user",
+#        "email": "test@.mail.ru",
+#        "phone": "+79999999999",
+#        "password": "secret",
+#        "preferences": {
+#            "mail": {
+#                "approval": true
+#            },
+#            "phone": {
+#                "approval": true
+#            }
+#        }
+#}'
+POST http://localhost:8080/v1/add_user
+Content-Type: application/json
+
+{
+  "username": "test-user",
+  "email": "test@.mail.ru",
+  "phone": "+79999999999",
+  "password": "secret",
+  "preferences": {
+    "mail": {
+      "approval": true
+    },
+    "phone": {
+      "approval": true
+    }
+  }
+}
+
+###

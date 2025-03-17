@@ -1,0 +1,21 @@
+### Create user
+
+grpcurl -plaintext \
+    -import-path ./api/proto/notify \
+    -import-path ./api/proto \
+    -proto notify.proto \
+    -d '{
+        "username": "test-user",
+        "email": "test@mail.ru",
+        "phone": "+79999999999",
+        "password": "secret",
+        "preferences": {
+            "mail": {
+                "approval": true
+            },
+            "phone": {
+                "approval": false
+            }
+        }
+    }' \
+    localhost:8080 notify.Users/AddUser
