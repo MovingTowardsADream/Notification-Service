@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/suite"
+	"google.golang.org/grpc/metadata"
 
 	notifyv1 "Notification_Service/api/gen/go/notify"
 	"Notification_Service/tests/gotests"
@@ -30,7 +31,12 @@ func (s *SendNotifySuite) TestSuccess() {
 
 	s.Require().NoError(err)
 
-	respSendNotify, err := s.Repo.Clients().Notify.SendMessage(ctx, &notifyv1.SendMessageReq{
+	md := metadata.Pairs(
+		"X-Request-ID", "req_id_23cebbf2b24914e5f91adb2d77ffc3ah",
+	)
+	ctxWithMeta := metadata.NewOutgoingContext(ctx, md)
+
+	respSendNotify, err := s.Repo.Clients().Notify.SendMessage(ctxWithMeta, &notifyv1.SendMessageReq{
 		UserID:     respCreateUser.Id,
 		NotifyType: 1,
 		Channels: &notifyv1.Channels{
@@ -51,7 +57,12 @@ func (s *SendNotifySuite) TestSuccess() {
 func (s *SendNotifySuite) TestNotFound() {
 	ctx := context.Background()
 
-	_, err := s.Repo.Clients().Notify.SendMessage(ctx, &notifyv1.SendMessageReq{
+	md := metadata.Pairs(
+		"X-Request-ID", "req_id_2df4e7bhbf2b24adbc23c3917f5f91ae",
+	)
+	ctxWithMeta := metadata.NewOutgoingContext(ctx, md)
+
+	_, err := s.Repo.Clients().Notify.SendMessage(ctxWithMeta, &notifyv1.SendMessageReq{
 		UserID:     "unknown_id",
 		NotifyType: 1,
 		Channels: &notifyv1.Channels{

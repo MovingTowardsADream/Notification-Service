@@ -53,12 +53,18 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 
 	gateway := gwmessaging.NewNotifyGateway(repo.MesClient())
 
-	_ = outbox.NewWorker(
+	outboxWorker := outbox.NewWorker(
 		map[string]outbox.WorkerRun{
 			"mail":  outboxhandler.NewMailWorker(repo.Logger(), notifyRepo, gateway),
 			"phone": outboxhandler.NewPhoneWorker(repo.Logger(), notifyRepo, gateway),
 		},
 	)
+
+	err = outboxWorker.WorkerRun()
+
+	if err != nil {
+		panic(err)
+	}
 
 	notifySender := usecase.NewNotifySender(repo.Logger(), usersRepo, notifyRepo)
 
@@ -75,6 +81,7 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	}
 
 	return ctx, repo, mockServer, func() {
+		_ = outboxWorker.Shutdown()
 		_ = repo.Stop(context.Background())
 		_ = mockServer.Close()
 		ctrl.Finish()
