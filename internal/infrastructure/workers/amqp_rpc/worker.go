@@ -28,9 +28,10 @@ type notifyWorkerRoutes struct {
 
 func newNotifyWorkerRoutes(routes map[string]rmqserver.CallHandler, sm SenderMail, sp SenderPhone) {
 	r := &notifyWorkerRoutes{sm, sp}
+	//nolint:gocritic // increased readability
 	{
-		routes["mail_notify"] = r.createNewMailNotify()
-		routes["phone_notify"] = r.createNewPhoneNotify()
+		routes["notify.mail"] = r.createNewMailNotify()
+		routes["notify.phone"] = r.createNewPhoneNotify()
 	}
 }
 

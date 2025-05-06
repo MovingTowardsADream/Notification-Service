@@ -63,10 +63,11 @@ type (
 	}
 
 	Messaging struct {
-		Server MessagingServer `yaml:"server"`
-		Client MessagingClient `yaml:"client"`
-		URL    string          `env:"RMQ_URL"        env-required:"true"      yaml:"url"`
-		Topics []string        `env:"RMQ_TOPICS"     env-required:"true"      yaml:"topics"`
+		Server    MessagingServer `yaml:"server"`
+		Client    MessagingClient `yaml:"client"`
+		URL       string          `env:"RMQ_URL"        env-required:"true"      yaml:"url"`
+		Topics    []string        `env:"RMQ_TOPICS"     env-required:"true"      yaml:"topics"`
+		DeadTopic string          `env:"RMQ_DEAD_TOPIC" yaml:"deadTopic"`
 	}
 
 	SMTP struct {

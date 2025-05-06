@@ -21,12 +21,23 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	context.Context,
 	Repository,
 	*MockServer,
-	func(),
+	StackCancelFunc[CancelFunc],
 ) {
+	stackCancel := make(StackCancelFunc[CancelFunc], 0)
+
+	defer func() {
+		if err := recover(); err != nil {
+			_ = stackCancel.Clear()
+			panic(err)
+		}
+	}()
+
 	ctx, cancel := context.WithCancel(ctx)
+	stackCancel.Push(func() { cancel() })
 	ctx = context.WithValue(ctx, TestSessionIDHeader, name)
 
 	ctrl := gomock.NewController(t)
+	stackCancel.Push(func() { ctrl.Finish() })
 
 	mailMocks := mocks.NewMockSenderMail(ctrl)
 	mailMocks.EXPECT().SendMailLetter(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
@@ -37,13 +48,13 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	rmqRouter := amqprpc.NewRouter(mailMocks, phoneMocks)
 
 	repo, err := NewRepository(ctx, rmqRouter)
-
 	if err != nil {
 		panic(err)
 	}
 
-	err = repo.Start(ctx)
+	stackCancel.Push(func() { _ = repo.Stop(context.Background()) })
 
+	err = repo.Start(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -61,10 +72,11 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	)
 
 	err = outboxWorker.WorkerRun()
-
 	if err != nil {
 		panic(err)
 	}
+
+	stackCancel.Push(func() { _ = outboxWorker.Shutdown() })
 
 	notifySender := usecase.NewNotifySender(repo.Logger(), usersRepo, notifyRepo)
 
@@ -75,16 +87,11 @@ func SetupMocks(ctx context.Context, name string, t *testing.T) (
 	mockServer := NewMockServer(notifySender, editInfo)
 
 	err = mockServer.ListenAndServe(ctx)
-
 	if err != nil {
 		panic(err)
 	}
 
-	return ctx, repo, mockServer, func() {
-		_ = outboxWorker.Shutdown()
-		_ = repo.Stop(context.Background())
-		_ = mockServer.Close()
-		ctrl.Finish()
-		cancel()
-	}
+	stackCancel.Push(func() { _ = mockServer.Close() })
+
+	return ctx, repo, mockServer, stackCancel
 }

@@ -19,15 +19,15 @@ const (
 
 const tracerName = "userRepo"
 
-type UsersRepo struct {
+type RepoUsers struct {
 	storage *postgres.Postgres
 }
 
-func NewUsersRepo(storage *postgres.Postgres) *UsersRepo {
-	return &UsersRepo{storage: storage}
+func NewUsersRepo(storage *postgres.Postgres) *RepoUsers {
+	return &RepoUsers{storage: storage}
 }
 
-func (ur *UsersRepo) GetUserCommunication(
+func (ur *RepoUsers) GetUserCommunication(
 	ctx context.Context,
 	communication *dto.IdentificationUserCommunication,
 ) (*dto.UserCommunication, error) {
@@ -62,7 +62,7 @@ func (ur *UsersRepo) GetUserCommunication(
 	return &userCommunication, nil
 }
 
-func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
+func (ur *RepoUsers) EditPreferences(ctx context.Context, preferences *dto.UserPreferences) error {
 	const op = "UsersRepo.EditPreferences"
 	const spanName = "EditPreferences"
 
@@ -125,7 +125,7 @@ func (ur *UsersRepo) EditPreferences(ctx context.Context, preferences *dto.UserP
 	return nil
 }
 
-func (ur *UsersRepo) Create(ctx context.Context, userData *dto.User) (*models.User, error) {
+func (ur *RepoUsers) Create(ctx context.Context, userData *dto.User) (*models.User, error) {
 	const op = "UsersRepo.Add"
 	const spanName = "Add"
 

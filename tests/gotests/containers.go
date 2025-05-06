@@ -14,6 +14,8 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
+const _defaultContainersHostIP = "0.0.0.0"
+
 func initDatabaseIntegration(ctx context.Context) func() {
 	pgContainer, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
 		ContainerRequest: testcontainers.ContainerRequest{
@@ -28,7 +30,7 @@ func initDatabaseIntegration(ctx context.Context) func() {
 			HostConfigModifier: func(hc *container.HostConfig) {
 				hc.PortBindings = nat.PortMap{
 					"5432/tcp": []nat.PortBinding{
-						{HostIP: "0.0.0.0", HostPort: "5432"},
+						{HostIP: _defaultContainersHostIP, HostPort: "5432"},
 					},
 				}
 			},
@@ -57,8 +59,8 @@ func initMessagingIntegration(ctx context.Context) func() {
 			WaitingFor: wait.ForListeningPort("5672/tcp").WithStartupTimeout(10 * time.Second),
 			HostConfigModifier: func(hc *container.HostConfig) {
 				hc.PortBindings = nat.PortMap{
-					"5672/tcp":  []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: "5672"}},
-					"15672/tcp": []nat.PortBinding{{HostIP: "0.0.0.0", HostPort: "15672"}},
+					"5672/tcp":  []nat.PortBinding{{HostIP: _defaultContainersHostIP, HostPort: "5672"}},
+					"15672/tcp": []nat.PortBinding{{HostIP: _defaultContainersHostIP, HostPort: "15672"}},
 				}
 			},
 		},

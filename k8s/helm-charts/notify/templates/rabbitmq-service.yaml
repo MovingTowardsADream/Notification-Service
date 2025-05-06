@@ -1,3 +1,4 @@
+{{- if .Values.rabbitmq.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,9 +8,10 @@ spec:
     app: rabbitmq
   ports:
     - name: amqp
-      port: 5672
-      targetPort: 5672
+      port: {{ .Values.rabbitmq.service.port }}
+      targetPort: {{ .Values.rabbitmq.service.port }}
     - name: management
       port: 15672
       targetPort: 15672
   type: ClusterIP
+{{- end }}

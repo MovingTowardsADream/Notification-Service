@@ -1,7 +1,7 @@
 package hasher
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 )
 
@@ -18,7 +18,7 @@ func NewSHA1Hasher(salt string) *SHA1Hasher {
 }
 
 func (h *SHA1Hasher) Hash(password string) string {
-	hash := sha1.New()
+	hash := sha256.New()
 	hash.Write([]byte(password))
 
 	return fmt.Sprintf("%x", hash.Sum([]byte(h.salt)))

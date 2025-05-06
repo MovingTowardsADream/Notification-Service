@@ -157,7 +157,7 @@ func TestNotifyRepoProcessedNotify(t *testing.T) {
 					},
 				},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				m.ExpectBegin()
 
 				m.ExpectRollback()
@@ -175,7 +175,7 @@ func TestNotifyRepoProcessedNotify(t *testing.T) {
 					PhoneDate: nil,
 				},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				m.ExpectBegin()
 
 				m.ExpectCommit()
@@ -231,7 +231,7 @@ func TestNotifyRepoGetBatchMailNotify(t *testing.T) {
 				ctx:   context.Background(),
 				batch: &dto.BatchNotify{BatchSize: 1},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				rows := pgxmock.NewRows([]string{"request_id", "email", "notify_type", "subject", "body"}).
 					AddRow("req_id_72a187b57a357b83216d0018aa47d8c2", "something@mail.ru", 0, "New alert!", "<html>...</html>")
 
@@ -243,7 +243,7 @@ func TestNotifyRepoGetBatchMailNotify(t *testing.T) {
 					WillReturnRows(rows)
 			},
 			want: []*dto.MailIdempotencyData{
-				&dto.MailIdempotencyData{
+				{
 					RequestID:  "req_id_72a187b57a357b83216d0018aa47d8c2",
 					Mail:       "something@mail.ru",
 					NotifyType: 0,
@@ -259,7 +259,7 @@ func TestNotifyRepoGetBatchMailNotify(t *testing.T) {
 				ctx:   context.Background(),
 				batch: &dto.BatchNotify{BatchSize: 3},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				rows := pgxmock.NewRows([]string{"request_id", "email", "notify_type", "subject", "body"}).
 					AddRow("req_id_72a187b57a357b83216d0018aa47d8c2", "something@mail.ru", 0, "New alert!", "<html>...</html>").
 					AddRow("req_id_5d88ecc17ade4e80b944c91ded7efe83", "gentur@mail.ru", 0, "New alert!", "<html>...</html>")
@@ -272,14 +272,14 @@ func TestNotifyRepoGetBatchMailNotify(t *testing.T) {
 					WillReturnRows(rows)
 			},
 			want: []*dto.MailIdempotencyData{
-				&dto.MailIdempotencyData{
+				{
 					RequestID:  "req_id_72a187b57a357b83216d0018aa47d8c2",
 					Mail:       "something@mail.ru",
 					NotifyType: 0,
 					Subject:    "New alert!",
 					Body:       "<html>...</html>",
 				},
-				&dto.MailIdempotencyData{
+				{
 					RequestID:  "req_id_5d88ecc17ade4e80b944c91ded7efe83",
 					Mail:       "gentur@mail.ru",
 					NotifyType: 0,
@@ -295,7 +295,7 @@ func TestNotifyRepoGetBatchMailNotify(t *testing.T) {
 				ctx:   context.Background(),
 				batch: &dto.BatchNotify{BatchSize: 7},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				rows := pgxmock.NewRows([]string{"request_id", "email", "notify_type", "subject", "body"})
 
 				m.ExpectQuery(`SELECT history_email_notify.request_id, users.email, notify_type, subject, body` +
@@ -362,7 +362,7 @@ func TestNotifyRepoGetBatchPhoneNotify(t *testing.T) {
 				ctx:   context.Background(),
 				batch: &dto.BatchNotify{BatchSize: 1},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				rows := pgxmock.NewRows([]string{"request_id", "phone", "notify_type", "body"}).
 					AddRow("req_id_72a187b57a357b83216d0018aa47d8c2", "+79135838425", 0, "New alert!")
 
@@ -374,7 +374,7 @@ func TestNotifyRepoGetBatchPhoneNotify(t *testing.T) {
 					WillReturnRows(rows)
 			},
 			want: []*dto.PhoneIdempotencyData{
-				&dto.PhoneIdempotencyData{
+				{
 					RequestID:  "req_id_72a187b57a357b83216d0018aa47d8c2",
 					Phone:      "+79135838425",
 					NotifyType: 0,
@@ -389,7 +389,7 @@ func TestNotifyRepoGetBatchPhoneNotify(t *testing.T) {
 				ctx:   context.Background(),
 				batch: &dto.BatchNotify{BatchSize: 3},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				rows := pgxmock.NewRows([]string{"request_id", "phone", "notify_type", "body"}).
 					AddRow("req_id_72a187b57a357b83216d0018aa47d8c2", "+79172625406", 0, "New alert!").
 					AddRow("req_id_5d88ecc17ade4e80b944c91ded7efe83", "+79958535863", 0, "New alert!")
@@ -402,13 +402,13 @@ func TestNotifyRepoGetBatchPhoneNotify(t *testing.T) {
 					WillReturnRows(rows)
 			},
 			want: []*dto.PhoneIdempotencyData{
-				&dto.PhoneIdempotencyData{
+				{
 					RequestID:  "req_id_72a187b57a357b83216d0018aa47d8c2",
 					Phone:      "+79172625406",
 					NotifyType: 0,
 					Body:       "New alert!",
 				},
-				&dto.PhoneIdempotencyData{
+				{
 					RequestID:  "req_id_5d88ecc17ade4e80b944c91ded7efe83",
 					Phone:      "+79958535863",
 					NotifyType: 0,
@@ -423,7 +423,7 @@ func TestNotifyRepoGetBatchPhoneNotify(t *testing.T) {
 				ctx:   context.Background(),
 				batch: &dto.BatchNotify{BatchSize: 7},
 			},
-			mockBehavior: func(m pgxmock.PgxPoolIface, args args) {
+			mockBehavior: func(m pgxmock.PgxPoolIface, _ args) {
 				rows := pgxmock.NewRows([]string{"request_id", "phone", "notify_type", "body"})
 
 				m.ExpectQuery(`SELECT history_phone_notify.request_id, users.phone, notify_type, body` +
@@ -488,7 +488,7 @@ func TestNotifyRepoProcessedBatchMailNotify(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				keys: []*dto.IdempotencyKey{
-					&dto.IdempotencyKey{
+					{
 						RequestID: "req_id_72a187b57a357b83216d0018aa47d8c2",
 					},
 				},
@@ -505,10 +505,10 @@ func TestNotifyRepoProcessedBatchMailNotify(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				keys: []*dto.IdempotencyKey{
-					&dto.IdempotencyKey{
+					{
 						RequestID: "req_id_72a187b57a357b83216d0018aa47d8c2",
 					},
-					&dto.IdempotencyKey{
+					{
 						RequestID: "req_id_5d88ecc17ade4e80b944c91ded7efe83",
 					},
 				},
@@ -566,7 +566,7 @@ func TestNotifyRepoProcessedBatchPhoneNotify(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				keys: []*dto.IdempotencyKey{
-					&dto.IdempotencyKey{
+					{
 						RequestID: "req_id_72a187b57a357b83216d0018aa47d8c2",
 					},
 				},
@@ -583,10 +583,10 @@ func TestNotifyRepoProcessedBatchPhoneNotify(t *testing.T) {
 			args: args{
 				ctx: context.Background(),
 				keys: []*dto.IdempotencyKey{
-					&dto.IdempotencyKey{
+					{
 						RequestID: "req_id_72a187b57a357b83216d0018aa47d8c2",
 					},
-					&dto.IdempotencyKey{
+					{
 						RequestID: "req_id_5d88ecc17ade4e80b944c91ded7efe83",
 					},
 				},

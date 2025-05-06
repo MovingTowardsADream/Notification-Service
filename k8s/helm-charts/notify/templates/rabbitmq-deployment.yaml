@@ -1,3 +1,4 @@
+{{- if .Values.rabbitmq.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -14,9 +15,9 @@ spec:
     spec:
       containers:
         - name: rabbitmq
-          image: rabbitmq:3.8.12-management
+          image: {{ .Values.rabbitmq.image }}
           ports:
-            - containerPort: 5672
+            - containerPort: {{ .Values.rabbitmq.service.port }}
             - containerPort: 15672
           envFrom:
             - secretRef:
@@ -28,3 +29,4 @@ spec:
         - name: data-volume
           persistentVolumeClaim:
             claimName: rabbitmq-pvc
+{{- end }}

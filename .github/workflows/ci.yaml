@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+    paths-ignore: ["*.md", "docs", ".github"]
+
+  pull_request:
+    branches: ["main"]
+    paths-ignore: ["*.md", "docs", ".github"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "stable"
+
+      - name: Build
+        run: |
+          go mod tidy
+          go build -v ./...
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v5
+        with:
+          version: latest
+
+      - name: Unit tests
+        run: |
+          go mod tidy
+          go test -v -race -coverpkg=./... ./internal/...    
+
+      - name: Integration tests
+        run: |
+          go mod tidy
+          go test -v ./tests/gotests/notify

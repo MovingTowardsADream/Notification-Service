@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/status"
 
+	"Notification_Service/internal/interfaces/dto"
 	"Notification_Service/pkg/logger"
 )
 
@@ -21,13 +22,16 @@ func (lm *loggerMiddlewares) LoggingInterceptor(
 	info *grpc.UnaryServerInfo,
 	handler grpc.UnaryHandler,
 ) (any, error) {
+	var (
+		traceIDKey = dto.ContextKey("trace-id")
+		grpcCode   string
+	)
+
 	start := time.Now()
 
-	ctx = context.WithValue(ctx, "trace-id", generateTraceID())
+	ctxWithValue := context.WithValue(ctx, traceIDKey, generateTraceID())
 
-	resp, err := handler(ctx, req)
-
-	var grpcCode string
+	resp, err := handler(ctxWithValue, req)
 
 	if st, ok := status.FromError(err); ok {
 		grpcCode = st.Code().String()
@@ -36,7 +40,7 @@ func (lm *loggerMiddlewares) LoggingInterceptor(
 	lm.Info("request end",
 		logger.AnyAttr("method", info.FullMethod),
 		logger.AnyAttr("status", grpcCode),
-		logger.AnyAttr("trace-id", ctx.Value("trace-id").(string)),
+		logger.AnyAttr("trace-id", ctxWithValue.Value("trace-id").(string)),
 		logger.AnyAttr("duration", time.Since(start)),
 	)
 

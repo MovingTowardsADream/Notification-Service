@@ -19,6 +19,8 @@ import (
 
 const pathToMigrate = "../../../migrations"
 
+var ErrRepositoryImpl = errors.New("errors repository implementation")
+
 type Repository interface {
 	UnitName() string
 	ServiceName() string
@@ -42,7 +44,7 @@ type RepositoryImpl struct {
 	mesServ     *rmqserver.Server
 	mesClient   *rmqclient.Client
 	rmqRouter   map[string]rmqserver.CallHandler
-	cancel      func() error
+	cancel      StackCancelFunc[CancelFunc]
 }
 
 func NewRepository(_ context.Context, rmqRouter map[string]rmqserver.CallHandler) (Repository, error) {
@@ -98,26 +100,35 @@ func (r *RepositoryImpl) MesClient() *rmqclient.Client {
 	return r.mesClient
 }
 
-func (r *RepositoryImpl) Start(ctx context.Context) error {
-	var err error
+func (r *RepositoryImpl) Start(ctx context.Context) (err error) {
+	stackCancel := make(StackCancelFunc[CancelFunc], 0)
+
+	defer func() {
+		if rec := recover(); rec != nil {
+			r.logger.Error("recover repository", logger.AnyAttr("mes", rec))
+			_ = stackCancel.Clear()
+			err = ErrRepositoryImpl
+		}
+	}()
 
 	cancelDB := initDatabaseIntegration(ctx)
+	stackCancel.Push(func() { cancelDB() })
 	cancelMes := initMessagingIntegration(ctx)
+	stackCancel.Push(func() { cancelMes() })
 
 	r.clients, err = NewClients(ctx, r.config)
-
 	if err != nil {
-		panic(err)
+		panic("error init grpc clients" + err.Error())
 	}
 
 	r.storage, err = postgres.New(ctx, r.config.Storage.URL)
-
 	if err != nil {
 		panic("storage connection error" + err.Error())
 	}
 
-	err = r.storage.Ping(ctx)
+	stackCancel.Push(func() { r.storage.Close() })
 
+	err = r.storage.Ping(ctx)
 	if err != nil {
 		panic("storage ping error" + err.Error())
 	}
@@ -130,10 +141,11 @@ func (r *RepositoryImpl) Start(ctx context.Context) error {
 		r.config.Messaging.Client.RPCExchange,
 		r.config.Messaging.Topics,
 	)
-
 	if err != nil {
 		panic("messaging client connection error" + err.Error())
 	}
+
+	stackCancel.Push(func() { _ = r.mesClient.Shutdown() })
 
 	r.mesServ, err = rmqserver.New(
 		r.config.Messaging.URL,
@@ -142,26 +154,18 @@ func (r *RepositoryImpl) Start(ctx context.Context) error {
 		r.rmqRouter,
 		r.logger,
 	)
-
 	if err != nil {
 		panic("messaging server connection error" + err.Error())
 	}
 
-	r.cancel = func() error {
-		_ = r.mesClient.Shutdown()
-		_ = r.mesServ.Shutdown()
-		r.storage.Close()
-		cancelDB()
-		cancelMes()
+	stackCancel.Push(func() { _ = r.mesServ.Shutdown() })
+	r.cancel = stackCancel
 
-		return nil
-	}
-
-	return nil
+	return err
 }
 
 func (r *RepositoryImpl) Stop(_ context.Context) error {
-	return r.cancel()
+	return r.cancel.Clear()
 }
 
 func migrateUp(migratePath, url string) {

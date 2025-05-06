@@ -60,3 +60,23 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+For envirements
+*/}}
+{{- define "parseDotEnv" -}}
+{{- $content := .Files.Get .Values.envFile }}
+{{- $lines := splitList "\n" $content }}
+{{- $dict := dict }}
+{{- range $line := $lines }}
+{{- if and $line (contains "=" $line) }}
+{{- $parts := splitn "=" 2 $line }}
+{{- $key := trim (index $parts._0) }}
+{{- $value := trim (index $parts._1) }}
+{{- if and $key (not (hasPrefix "#" $key)) }}
+{{- $_ := set $dict $key $value }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- $dict | toYaml }}
+{{- end }}

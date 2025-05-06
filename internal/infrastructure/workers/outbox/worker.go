@@ -17,9 +17,9 @@ func NewWorker(workers map[string]WorkerRun) *Worker {
 
 func (w *Worker) WorkerRun() error {
 	for _, worker := range w.workers {
-		go func() {
-			_ = worker.Run()
-		}()
+		go func(w WorkerRun) {
+			_ = w.Run()
+		}(worker)
 	}
 	return nil
 }

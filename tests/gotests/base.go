@@ -20,7 +20,7 @@ type BaseSuite struct {
 	TestCtx    context.Context
 	Repo       Repository
 	mockServer *MockServer
-	cancel     func()
+	cancel     StackCancelFunc[CancelFunc]
 }
 
 func (s *BaseSuite) SetupSuite() {
@@ -28,7 +28,7 @@ func (s *BaseSuite) SetupSuite() {
 }
 
 func (s *BaseSuite) TearDownSuite() {
-	s.cancel()
+	_ = s.cancel.Clear()
 }
 
 func (s *BaseSuite) GetContext() context.Context {
@@ -48,5 +48,5 @@ func (s *BaseSuite) newContext(ctx context.Context) context.Context {
 }
 
 func (s *BaseSuite) generateContextName() string {
-	return fmt.Sprintf("%s-%d-%d", s.Name, time.Now().Nanosecond(), rand.Uint32())
+	return fmt.Sprintf("%s-%d-%d", s.Name, time.Now().Nanosecond(), rand.Uint32()) //nolint:gosec // used as a name
 }

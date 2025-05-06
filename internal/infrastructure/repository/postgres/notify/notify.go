@@ -8,8 +8,8 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 
-	"Notification_Service/internal/domain/models"
 	"Notification_Service/internal/infrastructure/repository/postgres"
+	"Notification_Service/internal/interfaces/convert"
 	"Notification_Service/internal/interfaces/dto"
 )
 
@@ -20,15 +20,16 @@ const (
 
 const tracerName = "notifyRepo"
 
-type NotifyRepo struct {
+type RepoNotify struct {
 	storage *postgres.Postgres
 }
 
-func NewNotifyRepo(storage *postgres.Postgres) *NotifyRepo {
-	return &NotifyRepo{storage: storage}
+func NewNotifyRepo(storage *postgres.Postgres) *RepoNotify {
+	return &RepoNotify{storage: storage}
 }
 
-func (nr *NotifyRepo) ProcessedNotify(
+//nolint:lll // forced by transaction
+func (nr *RepoNotify) ProcessedNotify(
 	ctx context.Context,
 	processed *dto.ProcessedNotify,
 ) error {
@@ -88,7 +89,7 @@ func (nr *NotifyRepo) ProcessedNotify(
 	return nil
 }
 
-func (nr *NotifyRepo) GetBatchMailNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.MailIdempotencyData, error) {
+func (nr *RepoNotify) GetBatchMailNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.MailIdempotencyData, error) {
 	const op = "NotifyRepo.GetBatchMailNotify"
 	const spanName = "GetBatchMailNotify"
 
@@ -102,6 +103,7 @@ func (nr *NotifyRepo) GetBatchMailNotify(ctx context.Context, batch *dto.BatchNo
 		Where("history_email_notify.status = 'processed'").
 		InnerJoin("users on history_email_notify.user_id = users.id").
 		Limit(batch.BatchSize).
+		Suffix("for update skip locked").
 		ToSql()
 
 	rows, err := nr.storage.Pool.Query(ctx, sql, args...)
@@ -117,18 +119,23 @@ func (nr *NotifyRepo) GetBatchMailNotify(ctx context.Context, batch *dto.BatchNo
 		var tmp dto.MailIdempotencyData
 		var notifyType int
 
-		err := rows.Scan(&tmp.RequestID, &tmp.Mail, &notifyType, &tmp.Subject, &tmp.Body)
+		err = rows.Scan(&tmp.RequestID, &tmp.Mail, &notifyType, &tmp.Subject, &tmp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("%s - rows.Scan: %w", op, postgres.MappingErrors(err))
 		}
-		tmp.NotifyType = models.NotifyType(notifyType)
+
+		tmp.NotifyType, err = convert.IntToNotifyType(notifyType)
+		if err != nil {
+			return nil, fmt.Errorf("%s - rows.Scan: %w", op, postgres.MappingErrors(err))
+		}
+
 		mailsData = append(mailsData, &tmp)
 	}
 
 	return mailsData, nil
 }
 
-func (nr *NotifyRepo) ProcessedBatchMailNotify(ctx context.Context, keys []*dto.IdempotencyKey) error {
+func (nr *RepoNotify) ProcessedBatchMailNotify(ctx context.Context, keys []*dto.IdempotencyKey) error {
 	const op = "NotifyRepo.ProcessedBatchMailNotify"
 	const spanName = "ProcessedBatchMailNotify"
 
@@ -157,7 +164,7 @@ func (nr *NotifyRepo) ProcessedBatchMailNotify(ctx context.Context, keys []*dto.
 	return nil
 }
 
-func (nr *NotifyRepo) GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.PhoneIdempotencyData, error) {
+func (nr *RepoNotify) GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.PhoneIdempotencyData, error) {
 	const op = "NotifyRepo.GetBatchPhoneNotify"
 	const spanName = "GetBatchPhoneNotify"
 
@@ -171,6 +178,7 @@ func (nr *NotifyRepo) GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchN
 		Where("history_phone_notify.status = 'processed'").
 		InnerJoin("users on history_phone_notify.user_id = users.id").
 		Limit(batch.BatchSize).
+		Suffix("for update skip locked").
 		ToSql()
 
 	rows, err := nr.storage.Pool.Query(ctx, sql, args...)
@@ -186,18 +194,23 @@ func (nr *NotifyRepo) GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchN
 		var tmp dto.PhoneIdempotencyData
 		var notifyType int
 
-		err := rows.Scan(&tmp.RequestID, &tmp.Phone, &notifyType, &tmp.Body)
+		err = rows.Scan(&tmp.RequestID, &tmp.Phone, &notifyType, &tmp.Body)
 		if err != nil {
 			return nil, fmt.Errorf("%s - rows.Scan: %w", op, postgres.MappingErrors(err))
 		}
-		tmp.NotifyType = models.NotifyType(notifyType)
+
+		tmp.NotifyType, err = convert.IntToNotifyType(notifyType)
+		if err != nil {
+			return nil, fmt.Errorf("%s - rows.Scan: %w", op, postgres.MappingErrors(err))
+		}
+
 		phonesData = append(phonesData, &tmp)
 	}
 
 	return phonesData, nil
 }
 
-func (nr *NotifyRepo) ProcessedBatchPhoneNotify(ctx context.Context, keys []*dto.IdempotencyKey) error {
+func (nr *RepoNotify) ProcessedBatchPhoneNotify(ctx context.Context, keys []*dto.IdempotencyKey) error {
 	const op = "NotifyRepo.ProcessedBatchPhoneNotify"
 	const spanName = "ProcessedBatchPhoneNotify"
 

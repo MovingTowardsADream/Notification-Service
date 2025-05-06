@@ -39,7 +39,7 @@ func initTestConfig() *config.Config {
 				Timeout:     2 * time.Second,
 			},
 			URL:    "amqp://amqp:admin@localhost:5672/",
-			Topics: []string{"mail_notify", "phone_notify"},
+			Topics: []string{"notify.mail", "notify.phone"},
 		},
 		Log: config.Log{
 			Level: "testing",

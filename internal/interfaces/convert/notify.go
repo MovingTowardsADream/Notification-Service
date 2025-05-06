@@ -2,6 +2,7 @@ package convert
 
 import (
 	"fmt"
+	"math"
 
 	"Notification_Service/internal/domain/models"
 	"Notification_Service/internal/interfaces/dto"
@@ -11,7 +12,7 @@ func validateNotifyType(notifyType dto.NotifyType) (models.NotifyType, error) {
 	if notifyType < 0 || notifyType > 255 {
 		return 0, fmt.Errorf("notifyType value %d is out of uint8 range", notifyType)
 	}
-	return models.NotifyType(notifyType), nil
+	return models.NotifyType(notifyType), nil //nolint:gosec // value checked, overflow is not possible
 }
 
 func ToProcessedNotify(notifyRequest *dto.ReqNotification, userCommunication *dto.UserCommunication) *dto.ProcessedNotify {
@@ -61,4 +62,11 @@ func PhoneIdempotencyDataToPhoneInfo(phoneNotify *dto.PhoneIdempotencyData) dto.
 		Phone:     phoneNotify.Phone,
 		Body:      phoneNotify.Body,
 	}
+}
+
+func IntToNotifyType(notifyType int) (models.NotifyType, error) {
+	if notifyType < 0 || notifyType > math.MaxUint8 {
+		return 0, fmt.Errorf("notifyType %d is out of uint8 range (0-255)", notifyType)
+	}
+	return models.NotifyType(notifyType), nil
 }

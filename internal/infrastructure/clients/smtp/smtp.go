@@ -31,7 +31,7 @@ func New(params Params, opts ...Option) *SMTP {
 	}
 
 	dialer := gomail.NewDialer(params.Domain, smtp.Port, params.Username, params.Password)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true} //nolint:gosec // insecure
 
 	smtp.Dialer = dialer
 

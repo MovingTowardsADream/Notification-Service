@@ -125,11 +125,10 @@ func (c *Client) RemoteCall(ctx context.Context, handler string, priority models
 	}
 
 	tracer := otel.Tracer("MessageClient")
-	ctx, span := tracer.Start(ctx, "RemoteCall")
+	_, span := tracer.Start(ctx, "RemoteCall")
 	defer span.End()
 
 	corrID := uuid.New().String()
-
 	span.SetAttributes(attribute.String("message.queue.id", corrID))
 
 	err := c.publish(corrID, handler, priority, request)

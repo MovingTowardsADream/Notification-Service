@@ -40,7 +40,7 @@ func (gw *NotifyGateway) CreateMailNotify(ctx context.Context, notify *dto.MailI
 	}
 
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "mail_notify", notify.NotifyType, convert.MailIdempotencyDataToMailInfo(notify))
+		return gw.mes.RemoteCall(ctx, "notify.mail", notify.NotifyType, convert.MailIdempotencyDataToMailInfo(notify))
 	})
 
 	if err != nil {
@@ -65,7 +65,7 @@ func (gw *NotifyGateway) CreatePhoneNotify(ctx context.Context, notify *dto.Phon
 	}
 
 	err := wrapper(ctx, func() error {
-		return gw.mes.RemoteCall(ctx, "phone_notify", notify.NotifyType, convert.PhoneIdempotencyDataToPhoneInfo(notify))
+		return gw.mes.RemoteCall(ctx, "notify.phone", notify.NotifyType, convert.PhoneIdempotencyDataToPhoneInfo(notify))
 	})
 
 	if err != nil {

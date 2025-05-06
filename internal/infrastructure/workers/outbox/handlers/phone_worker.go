@@ -1,3 +1,4 @@
+//nolint:dupl // will be rewritten to interface later
 package handlers
 
 import (
@@ -13,6 +14,8 @@ const (
 	defaultPhoneBatchSize = 10
 	defaultPhoneTimeout   = 1 * time.Second
 )
+
+var ErrPhoneWorkerStop = errors.New("phone worker stopping")
 
 type PhoneData interface {
 	GetBatchPhoneNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.PhoneIdempotencyData, error)
@@ -70,7 +73,7 @@ func (w *PhoneWorker) Run() error {
 	for {
 		select {
 		case <-w.stop:
-			return errors.New("phone worker stopping")
+			return ErrPhoneWorkerStop
 		default:
 			if err := w.worker(); err != nil {
 				w.log.Error(op, w.log.Err(err))

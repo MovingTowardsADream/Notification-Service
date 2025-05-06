@@ -3,11 +3,19 @@ package metrics
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"Notification_Service/pkg/logger"
+)
+
+const (
+	defaultReadHeaderTimeout = 30 * time.Second
+	defaultReadTimeout       = 60 * time.Second
+	defaultWriteTimeout      = 60 * time.Second
+	defaultIdleTimeout       = 120 * time.Second
 )
 
 type Server struct {
@@ -22,8 +30,12 @@ func NewMetricsServer(address string, reg *prometheus.Registry, l logger.Logger)
 
 	return &Server{
 		httpServer: &http.Server{
-			Addr:    address,
-			Handler: pMux,
+			Addr:              address,
+			Handler:           pMux,
+			ReadHeaderTimeout: defaultReadHeaderTimeout,
+			ReadTimeout:       defaultReadTimeout,
+			WriteTimeout:      defaultWriteTimeout,
+			IdleTimeout:       defaultIdleTimeout,
 		},
 		l: l,
 	}

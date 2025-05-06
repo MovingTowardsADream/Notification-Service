@@ -15,8 +15,9 @@ storage:
 
 messaging:
   topics:
-    - "phone_notify"
-    - "mail_notify"
+    - "notify.phone"
+    - "notify.mail"
+  deadTopic: "notify.dead"
   server:
     rpcExchange: "rpc_server"
     goroutinesCount: 11

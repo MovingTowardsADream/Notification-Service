@@ -16,16 +16,16 @@ type Clients struct {
 	Users  notifyv1.UsersClient
 }
 
-func NewClients(ctx context.Context, cfg *config.Config) (*Clients, error) {
+func NewClients(_ context.Context, cfg *config.Config) (*Clients, error) {
 	host, port := "localhost", cfg.GRPC.Port
 
-	nc, err := grpc.DialContext(ctx, utils.FormatAddress(host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	nc, err := grpc.NewClient(utils.FormatAddress(host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		return nil, err
 	}
 
-	uc, err := grpc.DialContext(ctx, utils.FormatAddress(host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	uc, err := grpc.NewClient(utils.FormatAddress(host, port), grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	if err != nil {
 		return nil, err

@@ -6,12 +6,12 @@ replicaCount: 1
 
 # Default values for notify.
 
-envFile: ""
+envFile: ".env"
 
 # Postgres configuration
 postgres:
   enabled: true
-  image: postgres:13
+  image: postgres:15
   storageClass: "standard"
   storageSize: "1Gi"
   service:

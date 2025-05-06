@@ -1,3 +1,4 @@
+//nolint:dupl // will be rewritten to interface later
 package handlers
 
 import (
@@ -13,6 +14,8 @@ const (
 	defaultMailBatchSize = 10
 	defaultMailTimeout   = 1 * time.Second
 )
+
+var ErrMailWorkerStop = errors.New("mail worker stopping")
 
 type MailData interface {
 	GetBatchMailNotify(ctx context.Context, batch *dto.BatchNotify) ([]*dto.MailIdempotencyData, error)
@@ -70,7 +73,7 @@ func (w *MailWorker) Run() error {
 	for {
 		select {
 		case <-w.stop:
-			return errors.New("mail worker stopping")
+			return ErrMailWorkerStop
 		default:
 			if err := w.worker(); err != nil {
 				w.log.Error(op, w.log.Err(err))
